@@ -1243,101 +1243,46 @@ function setupConcreteWorkspace() {
     safeSetHtml(els.taskInstructions, `Reparte ${state.a} gusanos en ${state.b} grupos por igual.`);
   }
 
-  const isLargeCount = state.a > 100;
   const leafWormsCount = state.mode === 'resta' ? (state.a - concreteComposted) : state.a;
 
-  if (isLargeCount) {
-    // 1. Render single clean mini worm count indicator on the leaf
-    leafWormsBox.innerHTML = `
-      <div class="concrete-summary-box" style="cursor:pointer;">
-        <span class="summary-count">${leafWormsCount}</span>
+  // 1. Render single clean badge showing only the number on the leaf
+  leafWormsBox.innerHTML = `
+    <div class="concrete-summary-box" style="cursor:pointer;">
+      <span class="summary-count">${leafWormsCount}</span>
+    </div>
+  `;
+
+  // 2. Render single compost badge showing the ratio in the compostera
+  let composteraHtml = '';
+  if (state.mode === 'resta') {
+    composteraHtml = `
+      <div class="concrete-summary-box compost" style="cursor:pointer;">
+        <span class="summary-count">${concreteComposted} / ${state.b}</span>
       </div>
     `;
+  }
+  composteraSlotsBox.innerHTML = composteraHtml;
 
-    // 2. Render single compost count indicator in the compostera
-    let composteraHtml = '';
-    if (state.mode === 'resta') {
-      composteraHtml = `
-        <div class="concrete-summary-box compost" style="cursor:pointer;">
-          <span class="summary-count">${concreteComposted} / ${state.b}</span>
-        </div>
-      `;
-    }
-    composteraSlotsBox.innerHTML = composteraHtml;
-
-    // Click interactions for summary boxes in subtraction mode
-    const leafSummary = leafWormsBox.querySelector('.concrete-summary-box');
-    if (leafSummary) {
-      leafSummary.addEventListener('click', () => {
-        if (state.mode === 'resta' && concreteComposted < state.b) {
-          concreteComposted++;
-          sndPlace(0);
-          setupConcreteWorkspace();
-        }
-      });
-    }
-
-    const compostSummary = composteraSlotsBox.querySelector('.concrete-summary-box.compost');
-    if (compostSummary) {
-      compostSummary.addEventListener('click', () => {
-        if (state.mode === 'resta' && concreteComposted > 0) {
-          concreteComposted--;
-          sndSoft();
-          setupConcreteWorkspace();
-        }
-      });
-    }
-
-  } else {
-    // Determine worm scaling size for standard view
-    let wormSize = 44;
-    if (state.a > 50) {
-      wormSize = 20;
-    } else if (state.a > 20) {
-      wormSize = 30;
-    }
-
-    // Render plain worms on the leaf
-    let leafWormsHtml = '';
-    const leafWormsCountCapped = Math.min(100, leafWormsCount);
-    for (let i = 0; i < leafWormsCountCapped; i++) {
-      leafWormsHtml += `<div class="plain-worm" data-index="${i}" style="width:${wormSize}px; height:${wormSize}px;"><img src="${WORMS[0].img}" alt="gusano" class="worm-art" style="width:100%; height:auto;"></div>`;
-    }
-    leafWormsBox.innerHTML = leafWormsHtml;
-
-    // Render slots in the compostera
-    let composteraHtml = '';
-    if (state.mode === 'resta') {
-      const composteraCount = Math.min(100, state.b);
-      for (let i = 0; i < composteraCount; i++) {
-        if (i < concreteComposted) {
-          composteraHtml += `<div class="compostera-slot filled" data-index="${i}" style="width:${wormSize}px; height:${wormSize}px;"><img src="${WORMS[0].img}" alt="gusano" class="worm-art" style="width:100%; height:auto;"></div>`;
-        } else {
-          composteraHtml += `<div class="compostera-slot empty" data-index="${i}" style="width:${wormSize}px; height:${wormSize}px;"></div>`;
-        }
+  // Click interactions for summary boxes in subtraction mode
+  const leafSummary = leafWormsBox.querySelector('.concrete-summary-box');
+  if (leafSummary) {
+    leafSummary.addEventListener('click', () => {
+      if (state.mode === 'resta' && concreteComposted < state.b) {
+        concreteComposted++;
+        sndPlace(0);
+        setupConcreteWorkspace();
       }
-    }
-    composteraSlotsBox.innerHTML = composteraHtml;
-
-    // Click interaction for concrete worms grid
-    leafWormsBox.querySelectorAll('.plain-worm').forEach(worm => {
-      worm.addEventListener('click', () => {
-        if (state.mode === 'resta' && concreteComposted < state.b) {
-          concreteComposted++;
-          sndPlace(0);
-          setupConcreteWorkspace();
-        }
-      });
     });
+  }
 
-    composteraSlotsBox.querySelectorAll('.compostera-slot.filled').forEach(worm => {
-      worm.addEventListener('click', () => {
-        if (state.mode === 'resta' && concreteComposted > 0) {
-          concreteComposted--;
-          sndSoft();
-          setupConcreteWorkspace();
-        }
-      });
+  const compostSummary = composteraSlotsBox.querySelector('.concrete-summary-box.compost');
+  if (compostSummary) {
+    compostSummary.addEventListener('click', () => {
+      if (state.mode === 'resta' && concreteComposted > 0) {
+        concreteComposted--;
+        sndSoft();
+        setupConcreteWorkspace();
+      }
     });
   }
 }
