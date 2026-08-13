@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gusanos Calma: El Jardín de los Números</title>
+<style>
+  [hidden]{display:none !important;}
+  :root{
+    --bg:#f7f4ea; --card:#fffdf7; --text:#4b4237; --soft:#7d8c69;
+    --line:#e8dfcf; --green:#bfd8a8; --sand:#efe7d8; --shadow:rgba(80,64,40,.08);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:"Segoe UI", Arial, sans-serif; color:var(--text);
+    background:
+      radial-gradient(circle at top left, rgba(205,230,185,.35), transparent 30%),
+      radial-gradient(circle at bottom right, rgba(255,235,190,.4), transparent 25%),
+      var(--bg);
+    user-select:none; -webkit-user-select:none;
+  }
+  button{font:inherit;color:inherit;border:none;border-radius:16px;padding:10px 14px;cursor:pointer;background:var(--sand);transition:transform .18s ease;}
+  button:hover{transform:translateY(-1px);}
+  button:disabled{opacity:.5;cursor:default;transform:none;}
+  .app{max-width:1150px;margin:0 auto;padding:22px;}
+  header h1{margin:0;font-size:2rem;}
+  header p{margin-top:8px;line-height:1.5;max-width:900px;}
+  nav{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 22px;}
+  .mode-btn.active{background:var(--green);}
+  #breathBtn{background:#dfe9d3;}
+  #gameArea{display:grid;grid-template-columns:1.8fr 1fr;gap:18px;align-items:start;}
+  @media (max-width:850px){#gameArea{grid-template-columns:1fr;}}
+  #taskCard,#sidebar,#wormPad{background:var(--card);border:1px solid rgba(120,100,70,.06);border-radius:26px;padding:20px;box-shadow:0 10px 30px var(--shadow);}
+  #taskPrompt{font-size:1.7rem;line-height:1.3;margin-bottom:14px;}
+  #visualArea{margin:14px 0;}
+  .visual-note{background:#f5f8ef;border-radius:18px;padding:12px;line-height:1.4;}
+  .groups,.rows{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .rows{flex-direction:column;align-items:flex-start;}
+  .group{background:linear-gradient(145deg,#f7f5df,#edf4e4);border-radius:20px;padding:10px;display:flex;flex-wrap:wrap;gap:2px;max-width:260px;min-height:62px;align-items:center;justify-content:center;border:1px solid #dfe6c9;}
+  .groups-equation{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;}
+  .worm-token{display:inline-flex;align-items:flex-end;justify-content:center;width:48px;height:48px;overflow:visible;vertical-align:middle;}
+  .worm-token img{display:block;max-width:100%;filter:drop-shadow(0 3px 3px rgba(70,70,40,.16));}
+  .equal-group{display:flex;align-items:center;gap:8px;background:#f7f2df;border:1px solid #eadbbd;border-radius:18px;padding:7px 10px;}
+  .group-label{font-size:.78rem;font-weight:700;color:#6e765d;min-width:52px;}
+  .op{font-size:2rem;font-weight:800;padding:0 5px;color:#6f5b48;}
+  .place-value{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 18px;}
+  .leaf{background:#eef4e4;border-radius:20px;min-height:150px;padding:10px;text-align:center;cursor:pointer;transition:background .2s ease;}
+  .leaf.hover{background:#e2efd2;outline:3px dashed var(--soft);outline-offset:-6px;}
+  .place-label{display:block;font-size:.85rem;opacity:.72;margin-bottom:6px;}
+  .leaf-drop{min-height:110px;display:flex;align-items:center;justify-content:center;}
+  .empty-slot{width:74px;height:74px;border:3px dashed rgba(125,140,105,.35);border-radius:50%;}
+  .placed{cursor:grab;touch-action:none;}
+  #controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
+  #message{min-height:36px;margin-top:16px;font-size:1.05rem;line-height:1.45;}
+  #message.good{color:#497a3d;} #message.soft{color:#7c6a58;} #message.hint{color:#7f6c2f;}
+  #calmPanel{margin-top:18px;background:#f3eee4;border-radius:22px;padding:16px;}
+  #calmPanel p{margin:0 0 12px;line-height:1.45;}
+  #calmPanel button{margin:0 8px 8px 0;}
+  #sidebar h2,#wormPad h2{margin-top:0;font-size:1.15rem;}
+  #stats{display:grid;gap:8px;margin-bottom:14px;}
+  #plants,#compostPlants{min-height:54px;border-radius:18px;padding:12px;font-size:1.65rem;line-height:1.65;word-break:break-word;}
+  #plants{background:#f1f7e9;margin-bottom:12px;}
+  #compostPlants{background:#f5efe4;}
+  .plant{display:inline-block;margin:2px;transition:transform 1.2s ease;}
+  .plant.bloom{transform:scale(1.12);}
+  .small-note{font-size:.92rem;opacity:.75;line-height:1.4;margin-top:12px;}
+  #wormPad{margin-top:18px;}
+  #worms{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:flex-end;}
+  .worm-btn{background:linear-gradient(160deg,#fffaf0,#f4f8e8);border:2px solid #e7dfc9;border-radius:24px;padding:8px 9px 6px;touch-action:none;min-width:92px;min-height:105px;box-shadow:0 5px 12px rgba(90,70,40,.08);}
+  .worm-btn::after{content:attr(data-name);display:block;font-size:.72rem;font-weight:700;color:#655b4d;margin-top:-2px;}
+  .worm-btn.selected{outline:4px solid var(--green);background:#f2f8e8;}
+  #dragGhost{position:fixed;z-index:200;pointer-events:none;transform:translate(-50%,-62%) rotate(3deg) scale(1.06);filter:drop-shadow(0 12px 16px rgba(0,0,0,.2));}
+  .worm-art{display:block;object-fit:contain;transform-origin:50% 85%;animation:idle 3.4s ease-in-out infinite;filter:drop-shadow(0 7px 7px rgba(65,70,35,.15));}
+  .worm-art.pop{animation:pop .35s ease, idle 3.4s ease-in-out .35s infinite;}
+  .happy .worm-art{animation:happy .9s ease;}
+  .sway .worm-art{animation:sway .7s ease;}
+  .character-note{margin:0 0 12px;color:#6d6559;line-height:1.45;}
+  .companion-panel{margin-top:16px;padding:12px 14px;border-radius:20px;background:linear-gradient(135deg,#f5f2e5,#eef5e6);border:1px solid #dfe4cf;}
+  .companion-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px;}
+  .companion-family{display:flex;align-items:center;gap:8px;min-height:72px;padding:6px 10px;border-radius:16px;background:rgba(255,255,255,.55);}
+  .family-title{font-size:.82rem;font-weight:800;color:#65704e;margin-right:2px;}
+  .companion{display:inline-flex;align-items:flex-end;justify-content:center;min-width:64px;height:72px;}
+  .companion img{display:block;object-fit:contain;filter:drop-shadow(0 4px 5px rgba(65,70,35,.14));}
+  @media (max-width:600px){.worm-btn{min-width:78px;min-height:92px}.worm-btn .worm-art{max-width:72px!important}.groups-equation{gap:5px}.group{max-width:100%;}.worm-token{width:40px;height:44px}.companion-row{flex-direction:column;}.companion-family{justify-content:center;}}
+  @keyframes idle{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-3px) rotate(1.5deg)}}
+  @keyframes blink{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.15)}}
+  @keyframes happy{0%{transform:translateY(0) scale(1)}30%{transform:translateY(-10px) scale(1.06) rotate(-3deg)}60%{transform:translateY(0) scale(.98) rotate(2deg)}100%{transform:translateY(0) scale(1)}}
+  @keyframes sway{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+  @keyframes pop{0%{transform:scale(.5)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+  #breathOverlay{position:fixed;inset:0;z-index:100;background:rgba(248,245,236,.98);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:24px;text-align:center;}
+  #breathCircle{width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 30% 25%, #e7f1d8 0%, #b7cf9b 55%, #89a86f 100%);transform:scale(1);box-shadow:0 18px 45px rgba(110,130,85,.18);}
+  #breathText{font-size:1.9rem;}
+
+  .pilot-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 14px;padding:10px 12px;background:#f5f8ef;border-radius:16px;font-size:.92rem;}
+  .pilot-bar strong{font-weight:700;}
+  .badge-soft{display:inline-block;padding:4px 9px;border-radius:999px;background:#e8f0dc;}
+  #progressBox{display:grid;gap:8px;margin:12px 0;}
+  .progress-line{height:10px;background:#e8e2d7;border-radius:999px;overflow:hidden;}
+  .progress-fill{height:100%;width:0;background:#9fba83;border-radius:999px;transition:width .35s ease;}
+  .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .metric-card{background:#f7f4ea;border-radius:14px;padding:9px;}
+  .metric-card strong{display:block;font-size:1.1rem;}
+  #adultPanel{position:fixed;inset:0;z-index:150;background:rgba(55,48,38,.45);display:flex;align-items:center;justify-content:center;padding:18px;}
+  #adultCard{width:min(680px,100%);max-height:90vh;overflow:auto;background:#fffdf7;border-radius:24px;padding:22px;box-shadow:0 25px 80px rgba(0,0,0,.2);}
+  #adultCard label{display:block;font-weight:600;margin:12px 0 6px;}
+  #adultCard input,#adultCard select{width:100%;padding:11px;border:1px solid var(--line);border-radius:12px;background:white;font:inherit;}
+  .adult-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .log-note{font-size:.85rem;line-height:1.4;opacity:.75;}
+  .stage-badge{display:inline-block;margin-bottom:8px;padding:5px 10px;border-radius:999px;background:#eef4e4;font-size:.86rem;}
+  .concept-note{background:#fff8e8;border-radius:14px;padding:10px;margin-top:10px;font-size:.9rem;line-height:1.4;}
+  @media (max-width:600px){.app{padding:12px;} header h1{font-size:1.65rem;} #taskPrompt{font-size:1.45rem;} .leaf{min-height:130px;} .mini-grid{grid-template-columns:1fr 1fr;}}
+</style>
+<style>
+/* ======== REDISEÑO VISUAL V4 · JARDÍN ILUSTRADO ======== */
+:root{
+  --forest:#275b2b; --leaf:#5e9f38; --leaf2:#8fbd55; --cream:#fffdf5;
+  --panel:#fffdf8; --panel2:#f4f8e9; --gold:#f4b33f; --ink:#40372f;
+  --purple:#7752a8; --orange:#f28b24; --red:#e65043; --blue:#2c8dcc;
+}
+html{background:#aee5f6;}
+body{
+  min-height:100vh;
+  color:var(--ink);
+}
+.app{
+  max-width:1480px;
+  padding:18px 22px 28px;
+  display:grid;
+  grid-template-columns:220px minmax(0,1fr);
+  grid-template-areas:
+    "header header"
+    "roster roster"
+    "nav game";
+  gap:16px;
+}
+.app>header{grid-area:header;position:relative;background:linear-gradient(135deg,#fffdf7,#f3f7e9);border:2px solid rgba(91,128,61,.16);border-radius:28px;padding:18px 22px;box-shadow:0 14px 36px rgba(64,80,40,.13)}
+header h1{font-size:2.35rem;letter-spacing:-.03em;color:#285c2d;text-shadow:0 2px #fff}
+header h1:first-letter{font-size:1.15em}
+header p{max-width:1000px;margin:5px 0 10px;color:#5f564c}
+.pilot-bar{margin:8px 0 0;background:rgba(232,242,217,.72);border:1px solid #d7e3c6}
+.pilot-bar #adultBtn{margin-left:auto;background:#315fba;color:#fff;border-radius:999px;font-weight:700}
+.app>nav{
+  grid-area:nav;display:flex;flex-direction:column;align-self:start;gap:8px;
+  margin:0;padding:12px;background:linear-gradient(180deg,#f8f2df,#eef4e5);
+  border:2px solid #e0d5b9;border-radius:24px;box-shadow:0 12px 28px rgba(73,69,44,.12);
+  position:sticky;top:12px;
+}
+.app>nav:before{content:"🌱  ¿Qué haremos hoy?";display:block;color:#fff;font-size:1.08rem;font-weight:900;background:#4e7f35;border-radius:16px;padding:10px 12px;text-align:center;margin-bottom:3px}
+.app>nav .mode-btn{width:100%;text-align:left;background:#fffdf7;border:1px solid #e0d7c4;border-radius:14px;padding:11px 12px;font-weight:750;box-shadow:0 2px 6px rgba(70,60,40,.05)}
+.app>nav .mode-btn:before{margin-right:9px;font-size:1.1em}
+.app>nav .mode-btn[data-mode="numeros"]:before{content:"🔢"}.app>nav .mode-btn[data-mode="suma"]:before{content:"➕"}.app>nav .mode-btn[data-mode="resta"]:before{content:"➖"}.app>nav .mode-btn[data-mode="multiplica"]:before{content:"✖️"}.app>nav .mode-btn[data-mode="divide"]:before{content:"➗"}.app>nav .mode-btn[data-mode="escribe"]:before{content:"✍️"}
+.app>nav .mode-btn.active{background:linear-gradient(135deg,#ffbd35,#ef8d0e);color:#fff;border-color:#dc870d;box-shadow:0 5px 12px rgba(220,135,13,.25)}
+.app>nav #breathBtn,.app>nav #muteBtn{width:100%;border-radius:14px;background:#e8f1dc;font-weight:700}
+#gameArea{
+  grid-area:game;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start;
+}
+#taskCard,#sidebar,#wormPad{border-radius:28px;box-shadow:0 14px 34px rgba(66,73,42,.12);border:2px solid rgba(115,136,77,.14)}
+#taskCard{background:linear-gradient(145deg,#fffdf8,#f9f5e9);padding:22px}
+#taskCard:before{content:"🌿";float:right;font-size:1.5rem}
+#stageBadge{background:#e5f2d9;color:#38662e;font-weight:800}
+#taskPrompt{font-size:2rem;color:#3f382f;font-weight:850}
+#visualArea{background:linear-gradient(180deg,#edf5dc,#f9f6e7);border:1px solid #dbe4c8;border-radius:22px;padding:14px}
+.groups,.rows{gap:12px}
+.group{background:transparent;border:0;padding:5px;box-shadow:none}
+.worm-token{width:54px;height:58px}
+.worm-token img{filter:drop-shadow(0 5px 4px rgba(50,70,30,.16))}
+.op{font-size:2.5rem;color:#604a35}
+.concept-note{background:#fff6df;border:1px solid #ead8a8}
+.leaf{background:linear-gradient(145deg,#dfeec9,#eef6df);border:2px solid #c4d8a5;box-shadow:inset 0 2px 0 rgba(255,255,255,.65)}
+.leaf.hover{background:#d5ebba;outline:3px dashed #6fa44c}
+#controls button{border-radius:16px;font-weight:800}
+#check{background:#62a83b;color:#fff;padding-left:24px;padding-right:24px}
+#check:before{content:"✓ ";font-size:1.15em}
+#continueBtn{background:#dfeefb}
+#calmPanel{background:#fff3dc;border:1px solid #efd5a0}
+#sidebar{background:linear-gradient(180deg,#fffdf6,#f1f6e7);padding:18px}
+#sidebar h2{color:#3e7235;font-size:1.35rem}
+.metric-card{background:#f5f2e8;border:1px solid #e3dbc9}
+.progress-line{height:12px;background:#e5e0d3}.progress-fill{background:linear-gradient(90deg,#76b84d,#a5c95d)}
+#plants,#compostPlants{background:#eef5e4;border-radius:18px;padding:8px}
+.app>#wormPad{
+  grid-area:roster;background:linear-gradient(180deg,#fffdf8,#f6f7eb);padding:18px 20px 16px;position:relative;overflow:hidden
+}
+.app>#wormPad:after{content:"🌿";position:absolute;right:20px;top:14px;font-size:2.2rem;opacity:.35}
+.roster-heading{display:flex;justify-content:space-between;gap:20px;align-items:flex-end}
+.roster-heading h2{margin:3px 0 4px;color:#2e5d2e;font-size:1.35rem}
+.eyebrow{display:block;font-size:.72rem;letter-spacing:.12em;font-weight:900;color:#6a8b43}
+.roster-tip{background:#f3eddc;border:1px solid #e4d7b8;border-radius:999px;padding:8px 12px;font-size:.78rem;font-weight:750;white-space:nowrap}
+.character-note{margin:0;color:#655d54}
+#worms{display:flex;justify-content:space-around;align-items:flex-end;gap:10px;padding:8px 6px 4px}
+.worm-btn{
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;
+  min-width:100px;min-height:142px;padding:2px 4px 0;overflow:visible;touch-action:none;
+}
+.worm-btn:before{
+  content:attr(data-number);position:absolute;z-index:2;bottom:25px;left:50%;transform:translateX(-50%);
+  width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  background:var(--badge,#5b9d39);color:#fff;font-weight:900;font-size:.92rem;border:3px solid #fffdf8;
+  box-shadow:0 3px 8px rgba(50,60,35,.16)
+}
+.worm-btn:after{content:attr(data-name);display:block;color:#315e32;font-size:.8rem;font-weight:900;margin-top:0}
+.worm-btn .worm-art{width:auto!important;max-width:105px;height:104px!important;border-radius:0;filter:drop-shadow(0 8px 6px rgba(55,70,35,.17));transition:transform .22s ease,filter .22s ease}
+.worm-btn:hover .worm-art,.worm-btn:focus-visible .worm-art{transform:translateY(-7px) rotate(-2deg) scale(1.07);filter:drop-shadow(0 12px 8px rgba(55,70,35,.23))}
+.worm-btn:active .worm-art{transform:translateY(-2px) scale(.96)}
+.worm-btn.selected .worm-art{transform:translateY(-8px) scale(1.08);filter:drop-shadow(0 0 0 #fff) drop-shadow(0 0 9px #8fbd55)}
+.worm-btn.selected:before{background:#3f8c2d;box-shadow:0 0 0 4px #dff0cb,0 4px 10px rgba(60,90,40,.2)}
+.worm-trait{position:absolute;left:50%;bottom:-35px;transform:translateX(-50%) translateY(4px);width:145px;padding:7px 8px;border-radius:12px;background:#fffdf8;border:1px solid #e2d9c7;box-shadow:0 7px 18px rgba(50,50,35,.12);font-size:.7rem;line-height:1.25;color:#5d554a;opacity:0;pointer-events:none;transition:.2s;z-index:10}
+.worm-btn:hover .worm-trait,.worm-btn:focus-visible .worm-trait{opacity:1;transform:translateX(-50%) translateY(0)}
+.companion-panel{margin-top:12px;padding:12px 16px;border-radius:22px;background:linear-gradient(135deg,#edf4e1,#f8f4e4);border:1px solid #d9e2ca}
+.companion-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.companion-heading strong{display:block;font-size:1rem;color:#365d32}
+.companion-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+.companion-family{display:flex;align-items:center;gap:12px;min-height:112px;padding:4px 10px;border-radius:18px;background:rgba(255,255,255,.45);border:1px solid rgba(209,218,192,.7)}
+.family-title{font-size:.9rem;font-weight:900;color:#52713e;min-width:68px}
+.companion-items{display:flex;align-items:flex-end;gap:12px}
+.companion-chip{display:flex;flex-direction:column;align-items:center;gap:2px;padding:0;background:transparent;border:0;box-shadow:none;min-width:84px}
+.companion-chip img{width:auto!important;height:88px!important;max-width:105px;object-fit:contain;border-radius:0!important;filter:drop-shadow(0 6px 5px rgba(55,70,35,.15));transition:.22s}
+.companion-chip span{font-size:.72rem;font-weight:900;color:#555047}
+.companion-chip:hover img,.companion-chip.is-happy img{transform:translateY(-5px) rotate(-2deg) scale(1.06)}
+.companion-family.cien .family-title{color:#2e75a3}
+.small-note{color:#736b61}
+@media(max-width:1100px){
+  .app{grid-template-columns:190px minmax(0,1fr)}
+  #gameArea{grid-template-columns:minmax(0,1fr) 260px}
+  #worms{gap:2px}.worm-btn{min-width:80px}.worm-btn .worm-art{max-width:88px}
+}
+@media(max-width:820px){
+  .app{display:block;padding:10px}.app>header{margin-bottom:10px}.app>nav{position:static;margin-bottom:10px;display:grid;grid-template-columns:repeat(2,1fr)}
+  .app>nav:before{grid-column:1/-1}.app>nav #breathBtn,.app>nav #muteBtn{width:auto}
+  #gameArea{grid-template-columns:1fr}.app>#wormPad{margin-bottom:10px}
+  #worms{display:grid;grid-template-columns:repeat(5,1fr);gap:2px}.worm-btn{min-width:62px;min-height:118px}.worm-btn .worm-art{height:86px!important}.worm-btn:before{bottom:27px}
+  .worm-trait{display:none}.roster-heading{align-items:flex-start;flex-direction:column}.roster-tip{white-space:normal}
+  .companion-row{grid-template-columns:1fr}.companion-family{justify-content:center}
+}
+@media(max-width:520px){
+  header h1{font-size:1.7rem}.app>nav{grid-template-columns:1fr 1fr}
+  #worms{grid-template-columns:repeat(5,1fr)}.worm-btn .worm-art{height:72px!important}.worm-btn:before{width:25px;height:25px;font-size:.75rem;bottom:26px}
+  .worm-btn:after{font-size:.66rem}.companion-items{gap:5px}.companion-chip img{height:72px!important}
+}
+</style>
+
+<style id="mobile-responsive-v5">
+/* ==========================================================
+   V5 · RESPONSIVE MÓVIL / TABLET
+   Optimizado para 320px–820px, tacto y orientación vertical.
+   ========================================================== */
+html, body { width:100%; max-width:100%; overflow-x:hidden; }
+body { -webkit-tap-highlight-color: transparent; }
+button, .worm-btn, .companion-chip, .leaf { touch-action: manipulation; }
+button { min-height:44px; }
+
+/* Evita que textos, ecuaciones o imágenes fuerzen el ancho de pantalla */
+img, svg, canvas, video { max-width:100%; }
+#taskCard, #sidebar, #wormPad, #adultCard, #visualArea,
+.place-value, .groups-equation, .groups, .rows, .companion-panel,
+.pilot-bar, .companion-family { min-width:0; max-width:100%; }
+#taskPrompt, #message, .visual-note, .concept-note, .small-note,
+.character-note, .roster-tip { overflow-wrap:anywhere; }
+
+/* Tablets */
+@media (max-width:820px){
+  .app{
+    width:100%;
+    max-width:100%;
+    padding:10px;
+    gap:10px;
+  }
+  .app>header{
+    padding:14px;
+    border-radius:22px;
+  }
+  header h1{font-size:clamp(1.55rem,6vw,2rem);}
+  header p{font-size:.94rem;line-height:1.42;margin-bottom:8px;}
+  .pilot-bar{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:7px;
+    align-items:center;
+    padding:9px;
+  }
+  .pilot-bar #adultBtn{grid-column:1/-1;width:100%;margin:0;}
+
+  .app>nav{
+    position:static;
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+    padding:9px;
+    border-radius:20px;
+  }
+  .app>nav:before{grid-column:1/-1;font-size:.95rem;padding:8px 10px;}
+  .app>nav .mode-btn,
+  .app>nav #breathBtn,
+  .app>nav #muteBtn{
+    width:100%;
+    min-width:0;
+    min-height:46px;
+    padding:10px 8px;
+    font-size:.9rem;
+    text-align:center;
+    white-space:normal;
+  }
+  .app>nav .mode-btn:before{margin-right:4px;}
+
+  #gameArea{
+    display:flex;
+    flex-direction:column;
+    width:100%;
+    gap:10px;
+  }
+  #taskCard, #sidebar, #wormPad{
+    width:100%;
+    padding:14px;
+    border-radius:22px;
+  }
+  #taskCard{order:1;}
+  #sidebar{order:2;}
+
+  #stageBadge{font-size:.78rem;}
+  #taskPrompt{
+    font-size:clamp(1.25rem,6vw,1.65rem);
+    margin-bottom:10px;
+  }
+  #visualArea{padding:10px;margin:10px 0;}
+  .visual-note{font-size:.9rem;padding:10px;}
+  .op{font-size:clamp(1.7rem,8vw,2.2rem);padding:0 2px;}
+
+  /* Telar de centenas/decenas/unidades: tres columnas compactas */
+  .place-value{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:6px;
+    margin:8px 0 12px;
+  }
+  .leaf{
+    min-width:0;
+    min-height:108px;
+    padding:7px 4px;
+    border-radius:16px;
+  }
+  .place-label{font-size:.72rem;}
+  .leaf-drop{min-height:82px;}
+  .empty-slot{width:54px;height:54px;max-width:70%;}
+
+  #controls{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+  }
+  #controls button{width:100%;min-height:48px;padding:9px 7px;font-size:.9rem;}
+  #check{grid-column:1/-1;}
+
+  #calmPanel{padding:12px;margin-top:12px;}
+  #calmPanel button{width:100%;margin:0 0 7px;}
+
+  /* Panel de métricas */
+  #sidebar h2{font-size:1.15rem;}
+  #stats{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .metric-card{min-width:0;padding:8px;font-size:.82rem;}
+  .metric-card strong{font-size:1rem;}
+  .mini-grid{grid-template-columns:1fr 1fr;}
+
+  /* Personajes: 5 + 5, sin marcos rectangulares */
+  #wormPad{margin-top:0;}
+  .roster-heading{gap:8px;}
+  .roster-heading h2{font-size:1.15rem;}
+  .eyebrow{font-size:.65rem;}
+  .character-note{font-size:.82rem;line-height:1.35;}
+  .roster-tip{font-size:.75rem;width:100%;text-align:center;padding:7px 9px;}
+  #worms{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:2px;
+    padding:6px 0 2px;
+  }
+  .worm-btn{
+    min-width:0;
+    width:100%;
+    min-height:105px;
+    padding:2px 0 0;
+  }
+  .worm-btn .worm-art{
+    width:auto!important;
+    height:auto!important;
+    max-width:72px!important;
+    max-height:76px!important;
+  }
+  .worm-btn:before{
+    width:24px;height:24px;
+    font-size:.7rem;
+    bottom:22px;
+    border-width:2px;
+  }
+  .worm-btn:after{font-size:.62rem;line-height:1.05;}
+  .worm-trait{display:none!important;}
+
+  /* Compañeros: una familia por fila y personajes centrados */
+  .companion-panel{padding:10px;margin-top:9px;}
+  .companion-heading{align-items:flex-start;flex-direction:column;gap:3px;}
+  .companion-heading strong{font-size:.9rem;}
+  .companion-heading .small-note{font-size:.75rem;margin:0;}
+  .companion-row{grid-template-columns:1fr;gap:8px;}
+  .companion-family{
+    min-height:88px;
+    justify-content:center;
+    padding:5px 7px;
+    gap:7px;
+  }
+  .family-title{font-size:.76rem;min-width:58px;}
+  .companion-items{gap:4px;}
+  .companion-chip{min-width:66px;}
+  .companion-chip img{height:68px!important;max-width:82px;}
+  .companion-chip span{font-size:.64rem;}
+
+  /* Modal de adulto usable con teclado y pulgar */
+  #adultPanel{padding:8px;align-items:flex-start;overflow:auto;}
+  #adultCard{
+    width:100%;
+    max-width:680px;
+    max-height:none;
+    margin:8px auto;
+    padding:16px;
+    border-radius:20px;
+  }
+  #adultCard input,#adultCard select{min-height:46px;font-size:16px;}
+  .adult-actions{display:grid;grid-template-columns:1fr;gap:7px;}
+  .adult-actions button{width:100%;min-height:46px;}
+
+  /* Respiración */
+  #breathOverlay{padding:18px;gap:18px;}
+  #breathCircle{width:min(42vw,150px);height:min(42vw,150px);}
+  #breathText{font-size:clamp(1.4rem,7vw,1.9rem);}
+}
+
+/* Teléfonos pequeños */
+@media (max-width:430px){
+  .app{padding:7px;}
+  .app>header{padding:12px;border-radius:19px;}
+  header p{font-size:.88rem;}
+  .pilot-bar{grid-template-columns:1fr;}
+  .pilot-bar .badge-soft{justify-self:start;}
+
+  .app>nav{grid-template-columns:1fr 1fr;padding:7px;border-radius:18px;}
+  .app>nav:before{font-size:.88rem;}
+  .app>nav .mode-btn,
+  .app>nav #breathBtn,
+  .app>nav #muteBtn{font-size:.82rem;padding:9px 5px;min-height:44px;}
+
+  #taskCard,#sidebar,#wormPad{padding:11px;border-radius:19px;}
+  #taskPrompt{font-size:1.22rem;}
+  #visualArea{padding:8px;}
+  .place-value{gap:4px;}
+  .leaf{min-height:98px;padding:5px 2px;}
+  .leaf-drop{min-height:70px;}
+  .empty-slot{width:46px;height:46px;}
+  .worm-token{width:34px;height:38px;}
+  .group{min-height:50px;padding:4px;}
+  .groups-equation{gap:3px;}
+  #controls{grid-template-columns:1fr;}
+  #check{grid-column:auto;}
+
+  #worms{grid-template-columns:repeat(5,minmax(0,1fr));}
+  .worm-btn{min-height:91px;}
+  .worm-btn .worm-art{max-width:58px!important;max-height:62px!important;}
+  .worm-btn:before{width:21px;height:21px;font-size:.62rem;bottom:19px;}
+  .worm-btn:after{font-size:.55rem;}
+
+  .companion-family{min-height:78px;}
+  .companion-chip img{height:58px!important;max-width:70px;}
+  .companion-chip span{font-size:.58rem;}
+
+  #stats{grid-template-columns:1fr 1fr;}
+  .mini-grid{grid-template-columns:1fr;}
+}
+
+/* Teléfonos muy estrechos: 4 columnas mejora el tamaño de los personajes */
+@media (max-width:340px){
+  #worms{grid-template-columns:repeat(4,minmax(0,1fr));row-gap:4px;}
+  .worm-btn .worm-art{max-width:64px!important;max-height:68px!important;}
+  .worm-btn{min-height:96px;}
+  .worm-btn:after{font-size:.58rem;}
+  .place-value{grid-template-columns:1fr;}
+  .leaf{min-height:82px;}
+  .leaf-drop{min-height:58px;}
+  .empty-slot{width:42px;height:42px;}
+}
+
+/* Orientación horizontal en móviles: aprovecha el ancho sin crear scroll */
+@media (max-width:820px) and (orientation:landscape){
+  .app>header{padding:10px 14px;}
+  header p{max-width:none;margin:4px 0 7px;}
+  .app>nav{grid-template-columns:repeat(4,minmax(0,1fr));}
+  .app>nav:before{grid-column:1/-1;}
+  #gameArea{flex-direction:row;align-items:flex-start;}
+  #taskCard{flex:1 1 auto;min-width:0;}
+  #sidebar{flex:0 0 230px;}
+  #worms{grid-template-columns:repeat(10,minmax(0,1fr));}
+  .worm-btn{min-height:90px;}
+  .worm-btn .worm-art{max-height:60px!important;}
+  .companion-row{grid-template-columns:1fr 1fr;}
+}
+
+/* Dispositivos táctiles: estados claros sin depender de hover */
+@media (hover:none){
+  .worm-btn:hover .worm-art{transform:none;filter:drop-shadow(0 8px 6px rgba(55,70,35,.17));}
+  .companion-chip:hover img{transform:none;}
+  button:hover{transform:none;}
+}
+</style>
+<link rel="stylesheet" href="assets/ui/garden-v6.css">
+</head>
+<body>
+<main class="app">
+  <!-- 1. LEFT SIDEBAR -->
+  <aside id="left-sidebar">
+    <!-- Logotipo Madera -->
+    <div id="logo-wood" class="logo-card">
+      <div class="logo-title-gusanos">GUSANOS</div>
+      <div class="logo-title-calma">
+        <span style="color:#62a83b;">C</span><span style="color:#e65043;">A</span><span style="color:#f4b33f;">L</span><span style="color:#7752a8;">M</span><span style="color:#2c8dcc;">A</span>
+      </div>
+      <div class="logo-subtitle">El Jardín de los Números</div>
+      <div class="decor-leaf tl">🍃</div>
+      <div class="decor-leaf tr">🍃</div>
+    </div>
+
+    <!-- Menú Actividades -->
+    <div class="menu-header">¿Qué haremos hoy?</div>
+    <nav id="sidebar-nav">
+      <button class="mode-btn active" data-mode="numeros">Formar números</button>
+      <button class="mode-btn" data-mode="suma">Sumar</button>
+      <button class="mode-btn" data-mode="resta">Restar</button>
+      <button class="mode-btn" data-mode="multiplica">Multiplicar</button>
+      <button class="mode-btn" data-mode="divide">Dividir</button>
+      <button class="mode-btn" data-mode="escribe" style="display:none;">Escribe y forma</button>
+    </nav>
+
+    <!-- Selector de Dificultad -->
+    <div class="difficulty-panel card">
+      <div class="panel-title-leaf">Dificultad 🍃</div>
+      <div class="difficulty-circles">
+        <button type="button" class="diff-circle" data-level="1">1</button>
+        <button type="button" class="diff-circle active" data-level="2">2</button>
+        <button type="button" class="diff-circle" data-level="3">3</button>
+        <button type="button" class="diff-circle" data-level="4">4</button>
+        <button type="button" class="diff-circle" data-level="5">5</button>
+      </div>
+      <div class="difficulty-range" id="difficultyRangeLabel">Rango: 0 - 20</div>
+    </div>
+
+    <!-- Selector de Fase de Aprendizaje -->
+    <div class="learning-phase-panel card">
+      <div class="panel-title-leaf">Fase de aprendizaje 🍃</div>
+      <div class="phase-item" data-phase="concreta">
+        <span class="phase-badge active">Concreta</span>
+        <span class="phase-text">Manipulo gusanos</span>
+      </div>
+      <div class="phase-item" data-phase="pictorica">
+        <span class="phase-badge">Pictórica</span>
+        <span class="phase-text">Veo y organizo</span>
+      </div>
+      <div class="phase-item" data-phase="abstracta">
+        <span class="phase-badge">Abstracta</span>
+        <span class="phase-text">Con símbolo</span>
+      </div>
+    </div>
+
+    <!-- Botón Inicio -->
+    <button id="homeBtn" class="home-circle-btn" type="button" onclick="location.reload();">
+      <span class="home-icon">🏠</span>
+      <span class="home-text">Inicio</span>
+    </button>
+  </aside>
+
+  <!-- 2. TOP PANEL (ROSTER) -->
+  <section id="top-roster-panel" class="card">
+    <div class="roster-bubble-header">Conoce a tus amigos</div>
+    <div id="worms" aria-label="Personajes del jardín"></div>
+    <div class="top-controls">
+      <button id="muteBtn" class="top-btn" aria-label="Sonido">🔊<span>Sonido</span></button>
+      <button id="breathBtn" class="top-btn">🧘<span>Respirar</span></button>
+      <button id="settingsBtn" class="top-btn purple-btn">⚙️<span>Ajustes</span></button>
+    </div>
+  </section>
+
+  <!-- 3. CENTRAL WORKSPACE -->
+  <section id="taskCard" class="card">
+    <div class="activity-wooden-header">
+      <span id="activityTitleText">Actividad: Resta</span>
+    </div>
+    
+    <div class="workspace-header-buttons">
+      <button id="explainBtn" class="explain-btn">💡 Explicación</button>
+      <button id="hintBtn" class="hint-btn">💡 Pista <span id="hintBadge" class="hint-badge" style="display:none;">0</span></button>
+    </div>
+
+    <!-- Equation area -->
+    <div class="equation-container">
+      <div id="equationText" class="equation-row">
+        <!-- Will be populated dynamically by JS: e.g. 6 - 2 = [?] -->
+      </div>
+      <div id="taskPrompt" style="display:none;"></div> <!-- Keep hidden internally -->
+      <div id="taskInstructions" class="task-instructions">Quita 2 gusanos del grupo de 6. Arrastra 2 gusanos a la compostera.</div>
+    </div>
+
+    <!-- Interactive area -->
+    <div id="interactiveArea">
+      <!-- 3.1. Place-value telar (For numbers/free mode) -->
+      <div class="place-value" id="placeValueTelar">
+        <div class="leaf" data-slot="h"><span class="place-label">Centenas</span><div class="leaf-drop"></div></div>
+        <div class="leaf" data-slot="t"><span class="place-label">Decenas</span><div class="leaf-drop"></div></div>
+        <div class="leaf" data-slot="u"><span class="place-label">Unidades</span><div class="leaf-drop"></div></div>
+      </div>
+
+      <!-- 3.2. Concrete operations area (For Sum/Resta/etc.) -->
+      <div id="concreteOpsArea" style="display:none;">
+        <div class="concrete-workspace-grid">
+          <!-- Leaf container on the left -->
+          <div class="concrete-leaf-container">
+            <div class="concrete-leaf-graphic">
+              <!-- Background leaf shape in CSS -->
+              <div id="concreteLeafWorms" class="concrete-leaf-worms">
+                <!-- Draggable plain worms -->
+              </div>
+            </div>
+          </div>
+          <!-- Arrow pointing to right -->
+          <div class="concrete-arrow-container">
+            <svg class="green-arrow-svg" viewBox="0 0 100 50">
+              <path d="M10 40 Q50 10 90 25" fill="none" stroke="#2e7532" stroke-width="6" stroke-linecap="round" />
+              <polygon points="90,25 80,18 82,30" fill="#2e7532" />
+            </svg>
+          </div>
+          <!-- Compostera on the right -->
+          <div class="concrete-compostera-container">
+            <div class="concrete-compostera-barrel">
+              <div id="composteraSlots" class="compostera-slots">
+                <!-- Dashed slots -->
+              </div>
+              <div class="compostera-label">
+                <strong>Compostera</strong>
+                <span>Mis errores me ayudan a crecer 🍃</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Speech bubble character at bottom left -->
+    <div class="workspace-feedback-row">
+      <div class="feedback-character-avatar">
+        <img id="feedbackAvatar" src="assets/characters/cuatrito.png" alt="Personaje">
+      </div>
+      <div class="feedback-speech-bubble">
+        <p id="messageText">¡Muy bien! Tómate tu tiempo, cada intento hace crecer tu jardín.</p>
+      </div>
+      <!-- Right actions -->
+      <div class="feedback-actions">
+        <button id="clear" class="btn-clear">Vaciar telar</button>
+        <button id="calmTry" class="btn-retry" style="display:none;">Intentar otra vez</button>
+        <button id="continueBtn" class="btn-continue" hidden>Continuar con calma</button>
+        <button id="check" class="btn-check">Comprobar</button>
+      </div>
+    </div>
+
+    <!-- Hidden native elements to keep standard code running -->
+    <div id="visualArea" style="display:none;"></div>
+    <div id="stageBadge" style="display:none;"></div>
+    <div id="difficultyLabel" style="display:none;"></div>
+    <div id="sessionLabel" style="display:none;"></div>
+    <div id="message" style="display:none;"></div>
+    <div id="calmPanel" style="display:none;">
+      <button id="calmBreath" style="display:none;"></button>
+      <button id="calmHint" style="display:none;"></button>
+      <button id="calmTry" style="display:none;"></button>
+    </div>
+  </section>
+
+  <!-- 4. RIGHT SIDEBAR -->
+  <aside id="right-sidebar">
+    <!-- Mi Jardín -->
+    <div class="garden-panel card" style="display:none;">
+      <div class="panel-title-leaf">Mi Jardín 🍃</div>
+      <div class="garden-pot-display">
+        <!-- Garden beds and pots visually matching the photo -->
+        <div class="garden-pot">
+          <div class="garden-flower">
+            <span id="seedsFlowerCount" class="flower-center-number">18</span>
+          </div>
+        </div>
+      </div>
+      <div class="garden-info-row">
+        <span>Semillas</span>
+        <span class="seeds-count-badge">🌱 <span id="seedsCountValue">18</span></span>
+      </div>
+      <button id="viewGardenBtn" class="garden-action-btn">Ver jardín</button>
+      
+      <!-- Tiny plants and compost list from standard code (for compatibility, hidden or small) -->
+      <div id="plants" style="display:none;"></div>
+      <div id="compostPlants" style="display:none;"></div>
+    </div>
+
+    <!-- Diario del Jardín -->
+    <div class="diary-panel card">
+      <div class="diary-header">
+        <span class="diary-icon">📖</span> Diario del Jardín
+      </div>
+      <div class="diary-subheader">Resumen de esta sesión</div>
+      
+      <div class="diary-stats-list">
+        <div class="diary-stat-item">
+          <span class="stat-icon purple-bg">📋</span>
+          <span class="stat-label">Actividad:</span>
+          <strong id="statActivity" class="stat-value">Restar</strong>
+        </div>
+        <div class="diary-stat-item">
+          <span class="stat-icon green-bg">🧩</span>
+          <span class="stat-label">Ejercicios:</span>
+          <strong id="statExercises" class="stat-value">6</strong>
+        </div>
+        <div class="diary-stat-item">
+          <span class="stat-icon green-bg">✓</span>
+          <span class="stat-label">Aciertos:</span>
+          <strong id="statCorrect" class="stat-value">4</strong>
+        </div>
+        <div class="diary-stat-item">
+          <span class="stat-icon red-bg">✗</span>
+          <span class="stat-label">Errores:</span>
+          <strong id="statErrors" class="stat-value">2</strong>
+        </div>
+        <div class="diary-stat-item">
+          <span class="stat-icon yellow-bg">💡</span>
+          <span class="stat-label">Pistas usadas:</span>
+          <strong id="statHints" class="stat-value">2</strong>
+        </div>
+        <div class="diary-stat-item">
+          <span class="stat-icon blue-bg">🧘</span>
+          <span class="stat-label">Respiraciones:</span>
+          <strong id="statBreaths" class="stat-value">1</strong>
+        </div>
+        <div class="diary-stat-item">
+          <span class="stat-icon clock-bg">⏱️</span>
+          <span class="stat-label">Tiempo:</span>
+          <strong id="statTime" class="stat-value">03:25</strong>
+        </div>
+      </div>
+      
+      <button id="viewHistoryBtn" class="diary-action-btn">Ver historial</button>
+      <div id="stats" style="display:none;"></div>
+      <div id="progressBox" style="display:none;">
+        <div id="masteryFill" style="display:none;"></div>
+        <div id="masteryText" style="display:none;"></div>
+        <div id="firstTryMetric" style="display:none;"></div>
+        <div id="retryMetric" style="display:none;"></div>
+      </div>
+      <div id="diaryBox" style="display:none;"></div>
+    </div>
+  </aside>
+
+  <!-- Hidden native container for compatibility -->
+  <div id="companions" style="display:none;"></div>
+
+  <!-- 6. BOTTOM WOODEN BAR -->
+  <footer id="bottom-wood-banner">
+    <div class="banner-wood-plate">
+      <span>Errores son abono, la paciencia hace crecer tu jardín. 🌸🌼</span>
+    </div>
+    <button id="adultBtn" class="adult-investigator-btn" type="button">
+      <span class="btn-user-icon">👤</span> Para adultos / Investigador
+    </button>
+  </footer>
+</main>
+
+<div id="adultPanel" hidden>
+  <div id="adultCard">
+    <h2>Registro para validación educativa</h2>
+    <p>Este registro está pensado para el piloto. No introduzcas nombres completos ni datos sensibles. El código del participante puede ser un identificador anónimo, por ejemplo <strong>P01</strong>.</p>
+    <label for="participantCode">Código anónimo</label>
+    <input id="participantCode" maxlength="20" placeholder="Ej.: P01">
+    <label for="ageBand">Edad</label>
+    <select id="ageBand"><option value="5-6">5–6 años</option><option value="7-8">7–8 años</option><option value="9">9 años</option></select>
+    <label for="sessionType">Tipo de sesión</label>
+    <select id="sessionType"><option value="pilot">Piloto / práctica</option><option value="pretest">Pretest</option><option value="posttest">Postest</option></select>
+    <p class="log-note">Los datos se guardan localmente en este navegador. No se envían a Internet. Puedes exportarlos al finalizar una sesión.</p>
+    <div class="adult-actions">
+      <button id="startSession">Iniciar sesión</button>
+      <button id="exportSession">Exportar sesión JSON</button>
+      <button id="exportCSV">Exportar eventos CSV</button>
+      <button id="closeAdult">Cerrar</button>
+      <button id="clearPilotData">Borrar datos locales</button>
+    </div>
+    <div id="adultSummary" class="concept-note"></div>
+  </div>
+</div>
+
+<!-- Garden Modal Overlay -->
+<div id="gardenModal" class="adult-panel-overlay" hidden>
+  <div class="garden-modal-card">
+    <h2 style="margin-top:0; color:#2e7d32; font-family:'Outfit', sans-serif; font-weight:900;">🌿 Mi Jardín de Flores y Hojas 🍂</h2>
+    <p style="color:#5c5040; font-weight:700;">Cada acierto planta una flor, cada error alimenta la compostera.</p>
+    <div class="garden-modal-content">
+      <div class="garden-modal-section">
+        <h3 style="color:#388e3c; margin-top:0; font-weight:800;">Flores Cultivadas 🌼</h3>
+        <div id="modalPlants" class="modal-garden-grid"></div>
+      </div>
+      <div class="garden-modal-section">
+        <h3 style="color:#a1887f; margin-top:0; font-weight:800;">Hojas de Abono 🍂</h3>
+        <div id="modalCompost" class="modal-garden-grid"></div>
+      </div>
+    </div>
+    <button id="closeGardenModal" class="btn-close-modal" type="button">Volver al juego</button>
+  </div>
+</div>
+
+<div id="dragGhost" hidden></div>
+<div id="breathOverlay" hidden>
+  <div id="breathCircle"></div>
+  <div id="breathText">Inhala</div>
+  <button id="closeBreath">Volver al jardín</button>
+</div>
+
+<script>
+/* ================= DATOS DE LOS GUSANOS ================= */
+const cacheBust = "?v=" + Date.now();
+const IMG_WORMS = [
+  "assets/characters/cerito.png" + cacheBust,
+  "assets/characters/unita.png" + cacheBust,
+  "assets/characters/dosito.png" + cacheBust,
+  "assets/characters/tresin.png" + cacheBust,
+  "assets/characters/cuatrito.png" + cacheBust,
+  "assets/characters/cincon.png" + cacheBust,
+  "assets/characters/seisin.png" + cacheBust,
+  "assets/characters/sietebrote.png" + cacheBust,
+  "assets/characters/ochoonda.png" + cacheBust,
+  "assets/characters/nuevito.png" + cacheBust
+];
+
+const IMG_COMPANIONS = {
+  mili: "assets/companions/mili.png" + cacheBust,
+  milo: "assets/companions/milo.png" + cacheBust,
+  mina: "assets/companions/mina.png" + cacheBust,
+  cienon: "assets/companions/cielo.png" + cacheBust,
+  cielo: "assets/companions/cielo.png" + cacheBust,
+  cienita: "assets/companions/cienita.png" + cacheBust
+};
+
+const WORMS = [
+  {n:0,name:"Cerito", color:"#8FC63F",dark:"#4E7E2B",size:.92,type:"clásico",accessory:"sombrero",img:IMG_WORMS[0]},
+  {n:1,name:"Unita", color:"#F28AA7",dark:"#B84D72",size:.88,type:"clásico",accessory:"moño",img:IMG_WORMS[1]},
+  {n:2,name:"Dosito", color:"#F4A62A",dark:"#B9680D",size:.96,type:"clásico",accessory:"gorra",img:IMG_WORMS[2]},
+  {n:3,name:"Tresín", color:"#2498D0",dark:"#155D86",size:.90,type:"clásico",accessory:"sombrero de copa",img:IMG_WORMS[3]},
+  {n:4,name:"Cuatrito", color:"#8E55C7",dark:"#5A3186",size:1.00,type:"clásico",accessory:"boina",img:IMG_WORMS[4]},
+  {n:5,name:"Cincón", color:"#F28B24",dark:"#A9560E",size:.94,type:"clásico",accessory:"sombrero explorador",img:IMG_WORMS[5]},
+  {n:6,name:"Seisín", color:"#28B7A5",dark:"#197166",size:1.04,type:"clásico",accessory:"lentes",img:IMG_WORMS[6]},
+  {n:7,name:"Sietebrote", color:"#E84B43",dark:"#9F2F2A",size:1.02,type:"clásico",accessory:"gorra",img:IMG_WORMS[7]},
+  {n:8,name:"Ochoonda", color:"#2589D8",dark:"#175A92",size:1.08,type:"clásico",accessory:"audífonos",img:IMG_WORMS[8]},
+  {n:9,name:"Nuevito", color:"#78B83E",dark:"#477B22",size:1.00,type:"clásico",accessory:"birrete y lentes",img:IMG_WORMS[9]}
+];
+
+const COMPANIONS = {
+  mili:{name:"Mili",type:"milpiés",img:IMG_COMPANIONS.mili},
+  milo:{name:"Milo",type:"milpiés",img:IMG_COMPANIONS.milo},
+  mina:{name:"Mina",type:"milpiés",img:IMG_COMPANIONS.mina},
+  cienon:{name:"Cienón",type:"ciempiés",img:IMG_COMPANIONS.cienon},
+  cielo:{name:"Cielo",type:"ciempiés",img:IMG_COMPANIONS.cielo},
+  cienita:{name:"Cienita",type:"ciempiés",img:IMG_COMPANIONS.cienita}
+};
+
+function wormSVG(w, px, pop){
+  const size = Math.max(48, Math.round(px * (w.size||1)));
+  return '<img class="worm-art'+(pop?' pop':'')+'" src="'+w.img+'" alt="Gusano '+w.n+', '+w.name+'" draggable="false" style="width:'+size+'px;height:auto;animation-delay:'+((w.n*0.37)%3).toFixed(2)+'s" />';
+}
+function wormToken(px=54){
+  return '<span class="worm-token"><img src="'+WORMS[0].img+'" alt="gusano" draggable="false" style="width:'+px+'px;height:auto" /></span>';
+}
+function companionHTML(c,px=74){
+  return '<span class="companion" title="'+c.name+' · '+c.type+'"><img src="'+c.img+'" alt="'+c.name+', '+c.type+'" draggable="false" style="width:'+px+'px;height:auto" /></span>';
+}
+
+/* ================= SONIDO (Web Audio, sin archivos) ================= */
+let audioCtx = null, audioOn = true;
+const NOTES = [392,440,493.88,523.25,587.33,659.25,783.99,880,987.77,1174.66];
+function ensureAudio(){ if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(audioCtx && audioCtx.state==="suspended") audioCtx.resume(); }
+function tone(freq, dur, type, vol, when){
+  if(!audioOn || !audioCtx) return;
+  try{
+    const t = audioCtx.currentTime + (when||0);
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type||"sine"; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(vol||0.12, t+0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+(dur||0.2));
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t); o.stop(t+(dur||0.2)+0.05);
+  }catch(e){}
+}
+const sndPick   = ()=> tone(600,.08,"sine",.07);
+const sndPlace  = d => tone(NOTES[d],.3,"triangle",.12);
+const sndSoft   = ()=> tone(300,.12,"sine",.06);
+const sndOk     = ()=> { tone(523.25,.5,"sine",.1); tone(659.25,.5,"sine",.1,.13); tone(783.99,.6,"sine",.1,.26); };
+const sndNo     = ()=> { tone(196,.25,"triangle",.07); tone(147,.3,"triangle",.05,.08); };
+window.addEventListener("pointerdown", ensureAudio, {once:true});
+
+/* ================= ESTADO Y ELEMENTOS ================= */
+const state = {
+  mode:"numeros", expected:0, a:0, b:0, target:0, solved:false, errors:0,
+  seeds:0, compost:0, selected:null, taskStartedAt:0, hints:0, breathCount:0,
+  retries:0, taskIndex:0, difficulty:{numeros:1,suma:1,resta:1,multiplica:1,divide:1,escribe:1},
+  history:[], session:null
+};
+const slots = { h:null, t:null, u:null };
+const $ = id => document.getElementById(id);
+const els = {
+  prompt:$('taskPrompt'), visual:$('visualArea'), message:$('message'), calm:$('calmPanel'),
+  check:$('check'), continueBtn:$('continueBtn'), clear:$('clear'), plants:$('plants'),
+  compost:$('compostPlants'), stats:$('stats'), worms:$('worms'), ghost:$('dragGhost'),
+  taskCard:$('taskCard'), breathOverlay:$('breathOverlay'), breathCircle:$('breathCircle'),
+  breathText:$('breathText'), stageBadge:$('stageBadge'), difficultyLabel:$('difficultyLabel'),
+  sessionLabel:$('sessionLabel'), masteryFill:$('masteryFill'), masteryText:$('masteryText'),
+  firstTryMetric:$('firstTryMetric'), retryMetric:$('retryMetric'), diaryBox:$('diaryBox'),
+  taskInstructions:$('taskInstructions')
+};
+const leafEls = Array.from(document.querySelectorAll('.leaf'));
+const calmMsgs = ['El número encontró su lugar.','Una semilla quedó plantada.','Bien, con calma.','El jardín observó tu intento.','Paso a paso, el número florece.'];
+const wrongMsgs = ['Todavía no está listo.','Los errores también alimentan la compostera.','Mira con calma y vuelve a intentar.','El jardín puede esperar.','Respira si quieres, luego seguimos.'];
+const modeNames = {numeros:'Formar números',suma:'Suma',resta:'Resta',multiplica:'Multiplicación',divide:'División',escribe:'Escribe y forma'};
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function setMessage(t,c){
+  els.message.textContent=t;
+  els.message.className=c||'';
+  const textEl = $('messageText');
+  if (textEl) {
+    textEl.textContent = t || '¡Muy bien! Tómate tu tiempo, cada intento hace crecer tu jardín.';
+  }
+}
+function uid(){ return 'S'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7); }
+function nowISO(){ return new Date().toISOString(); }
+function difficulty(){ return state.difficulty[state.mode]||1; }
+function currentSessionType(){ return state.session?.type || 'practice'; }
+function logEvent(type, data={}){
+  if(!state.session) return;
+  state.session.events.push({ts:nowISO(),type,mode:state.mode,difficulty:difficulty(),task:state.taskIndex,...data});
+  saveProgress();
+}
+function ensureSession(){
+  if(!state.session) state.session={id:uid(),participantCode:'',ageBand:'',type:'practice',startedAt:nowISO(),events:[]};
+}
+const safeSetText = (el, text) => { if (el) el.textContent = text; };
+const safeSetHtml = (el, html) => { if (el) el.innerHTML = html; };
+const safeSetStyle = (el, prop, val) => { if (el) el.style[prop] = val; };
+const safeSetAttr = (el, attr, val) => { if (el) el.setAttribute(attr, val); };
+const safeToggleClass = (el, cls, force) => { if (el) el.classList.toggle(cls, force); };
+
+function setStage(){
+  if(state.mode==='escribe'){
+    safeSetText(els.stageBadge, '✍️ Aprendizaje Libre');
+    safeSetText(els.difficultyLabel, 'Escribe y forma');
+    return;
+  }
+  const d=difficulty();
+  const stage=d<=2?'🌿 Fase concreta y pictórica':d<=4?'🌱 Fase pictórica → símbolo':'🌼 Fase abstracta con apoyo visual';
+  safeSetText(els.stageBadge, stage);
+  safeSetText(els.difficultyLabel, 'Nivel '+d+' · '+modeNames[state.mode]);
+}
+
+/* ================= TELAR ================= */
+function renderLeaves(justPlaced){
+  leafEls.forEach(leaf=>{
+    const key=leaf.dataset.slot, drop=leaf.querySelector('.leaf-drop');
+    if(slots[key]!==null){
+      const w=WORMS[slots[key]];
+      drop.innerHTML='<div class="placed" data-slot="'+key+'">'+wormSVG(w,Math.round(96*w.size),justPlaced===key)+'</div>';
+    } else drop.innerHTML='<div class="empty-slot"></div>';
+  });
+  
+  // Update Equation Slots
+  renderEquation();
+  
+  document.querySelectorAll('.placed').forEach(el=>el.addEventListener('pointerdown',e=>startDrag(e,slots[el.dataset.slot],el.dataset.slot)));
+}
+function leafValue(){ return (slots.h??0)*100+(slots.t??0)*10+(slots.u??0); }
+function anyPlaced(){ return slots.h!==null||slots.t!==null||slots.u!==null; }
+let drag=null;
+function startDrag(e,digit,fromLeaf){
+  if(state.solved) return; ensureAudio(); e.preventDefault(); e.stopPropagation();
+  els.ghost.innerHTML=wormSVG(WORMS[digit],92,false); els.ghost.hidden=false; moveGhost(e.clientX,e.clientY);
+  drag={digit,fromLeaf,moved:false,sx:e.clientX,sy:e.clientY}; sndPick();
+  window.addEventListener('pointermove',onDragMove); window.addEventListener('pointerup',onDragUp,{once:true});
+}
+function moveGhost(x,y){ els.ghost.style.left=x+'px'; els.ghost.style.top=y+'px'; }
+function leafAt(x,y){
+  const activeDrops = Array.from(document.querySelectorAll('.leaf, .eq-slot-box'));
+  for(const leaf of activeDrops){
+    const r=leaf.getBoundingClientRect();
+    if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom) return leaf;
+  }
+  return null;
+}
+function onDragMove(e){
+  if(!drag)return;
+  if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>7)drag.moved=true;
+  moveGhost(e.clientX,e.clientY);
+  const hoveredLeaf = leafAt(e.clientX,e.clientY);
+  document.querySelectorAll('.leaf, .eq-slot-drop').forEach(l => {
+    l.classList.toggle('hover', l === hoveredLeaf || l.parentElement === hoveredLeaf);
+  });
+}
+function onDragUp(e){
+  window.removeEventListener('pointermove',onDragMove);
+  document.querySelectorAll('.leaf, .eq-slot-drop').forEach(l => l.classList.remove('hover'));
+  els.ghost.hidden=true;
+  const d=drag;drag=null;if(!d)return;
+  if(!d.moved){
+    if(d.fromLeaf===null){state.selected=state.selected===d.digit?null:d.digit;updateTraySelection();sndSoft();}
+    else{slots[d.fromLeaf]=null;renderLeaves();sndSoft();}
+    return;
+  }
+  const leaf=leafAt(e.clientX,e.clientY);
+  if(leaf){
+    const key=leaf.dataset.slot;
+    if(d.fromLeaf&&d.fromLeaf!==key)slots[d.fromLeaf]=null;
+    slots[key]=d.digit;
+    state.selected=null;
+    updateTraySelection();
+    renderLeaves(key);
+    sndPlace(d.digit);
+  }
+  else if(d.fromLeaf){slots[d.fromLeaf]=null;renderLeaves();sndSoft();}
+}
+leafEls.forEach(leaf=>leaf.addEventListener('click',e=>{
+  if(state.solved||e.target.closest('.placed'))return;
+  if(state.selected!==null){slots[leaf.dataset.slot]=state.selected;state.selected=null;updateTraySelection();renderLeaves(leaf.dataset.slot);sndPlace(slots[leaf.dataset.slot]);}
+}));
+
+const WORM_TRAITS = {
+  0:'Tranquilo y sabio · ama los momentos de calma.',
+  1:'Cariñosa y alegre · siempre está lista para apoyar.',
+  2:'Curioso y preguntón · quiere entender cómo funciona todo.',
+  3:'Inventor y soñador · le encanta crear ideas nuevas.',
+  4:'Organizado y metódico · disfruta poner todo en su lugar.',
+  5:'Aventurero y valiente · siempre busca nuevos caminos.',
+  6:'Observador y lógico · le gusta analizar cada detalle.',
+  7:'Estratégico y paciente · piensa antes de actuar.',
+  8:'Relajado y musical · recuerda respirar y seguir adelante.',
+  9:'Estudioso y atento · le gusta aprender cada día más.'
+};
+function renderCompanions(){
+  const host=$('companions'); if(!host) return;
+  const groups=[
+    {title:'Milpiés',items:[COMPANIONS.milo,COMPANIONS.mina],className:'mili'},
+    {title:'Ciempiés',items:[COMPANIONS.cielo,COMPANIONS.cienita],className:'cien'}
+  ];
+  host.innerHTML=groups.map(g=>'<div class="companion-family '+g.className+'"><div class="family-title">'+g.title+'</div><div class="companion-items">'+g.items.map(c=>{
+    return '<button type="button" class="companion-chip" title="'+c.name+' · '+c.type+'"><img src="'+c.img+'" alt="'+c.name+'" class="worm-art" style="width:88px;height:auto"><span>'+c.name+'</span></button>';
+  }).join('')+'</div></div>').join('');
+  host.querySelectorAll('.companion-chip').forEach(btn=>{
+    btn.addEventListener('pointerenter',()=>btn.classList.add('is-happy'));
+    btn.addEventListener('pointerleave',()=>btn.classList.remove('is-happy'));
+  });
+}
+
+/* ================= BANDEJA ================= */
+function renderTray(){
+  els.worms.innerHTML='';
+  WORMS.forEach(w=>{
+    const b=document.createElement('button');
+    b.className='worm-btn'; b.type='button'; b.dataset.digit=w.n; b.dataset.name=w.name; b.dataset.number=w.n; b.dataset.trait=WORM_TRAITS[w.n]; b.style.setProperty('--badge',w.color);
+    b.title=w.name+' · '+w.accessory+' · '+WORM_TRAITS[w.n];
+    b.setAttribute('aria-label','Gusano número '+w.n+', '+w.name+', '+w.accessory+'. '+WORM_TRAITS[w.n]);
+    b.innerHTML=wormSVG(w,Math.round(104*w.size),false)+'<span class="worm-trait">'+WORM_TRAITS[w.n]+'</span>';
+    b.addEventListener('pointerdown',e=>startDrag(e,w.n,null));
+    els.worms.appendChild(b);
+  });
+}
+function updateTraySelection(){document.querySelectorAll('.worm-btn').forEach(b=>b.classList.toggle('selected',Number(b.dataset.digit)===state.selected));}
+
+/* ================= MOTOR MATEMÁTICO ================= */
+function makeDots(count){
+  const n=Math.max(0,Math.min(count,40));
+  return '<div class="group" aria-label="'+n+' gusanos">'+Array(n).fill(wormToken(48)).join('')+'</div>';
+}
+function taskRanges(){
+  const d=difficulty();
+  return {
+    numeros:[[0,9],[0,20],[10,50],[10,99],[100,999]][d-1],
+    suma:[[0,5],[0,10],[0,20],[10,50],[20,99]][d-1],
+    resta:[[0,10],[0,20],[0,50],[10,99],[20,150]][d-1],
+    multiplica:[[1,3],[1,5],[2,7],[3,10],[4,12]][d-1],
+    divide:[[1,3],[1,5],[1,7],[2,10],[3,12]][d-1]
+  };
+}
+let concreteComposted = 0;
+
+function renderVisual(){
+  // Render the activity wooden header
+  const titleText = $('activityTitleText');
+  if (titleText) {
+    titleText.textContent = 'Actividad: ' + modeNames[state.mode];
+  }
+
+  // Hide/Show correct area based on mode
+  const placeValueTelar = $('placeValueTelar');
+  const concreteOpsArea = $('concreteOpsArea');
+  
+  if (state.mode === 'numeros' || state.mode === 'escribe') {
+    if (placeValueTelar) placeValueTelar.style.display = 'grid';
+    if (concreteOpsArea) concreteOpsArea.style.display = 'none';
+    if (state.mode === 'escribe' && state.target === null) {
+      safeSetHtml(els.taskInstructions, 'Ingresa un número en la caja para comenzar a jugar.');
+    } else {
+      safeSetHtml(els.taskInstructions, 'Representa el número colocando a tus amigos gusanos en las hojas correctas.');
+    }
+  } else {
+    if (placeValueTelar) placeValueTelar.style.display = 'none';
+    if (concreteOpsArea) concreteOpsArea.style.display = 'block';
+    setupConcreteWorkspace();
+  }
+
+  // Render the Equation
+  renderEquation();
+}
+
+function renderEquation() {
+  const container = $('equationText');
+  if (!container) return;
+
+  if (state.mode === 'escribe' && state.target === null) {
+    container.innerHTML = `
+      <div class="custom-number-form" style="display:flex; flex-direction:column; gap:10px; align-items:center; width:100%; padding:10px;">
+        <p style="margin:0; font-size:1.1rem; font-weight:700; color:#5c5346;">¿Qué número quieres formar?</p>
+        <div style="display:flex; gap:10px; width:100%; max-width:320px;">
+          <input type="number" id="customNumber" min="0" max="999" placeholder="0 - 999" style="flex:1; padding:10px; border:2px solid #ccd6be; border-radius:12px; font-size:1.2rem; text-align:center;">
+          <button id="startCustomTask" style="background:#5b9d39; color:white; font-weight:800; padding:10px 16px; border-radius:12px; cursor:pointer;">Formar</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('startCustomTask').addEventListener('click', submitCustomNumber);
+    document.getElementById('customNumber').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') submitCustomNumber();
+    });
+    return;
+  }
+
+  let html = '';
+  if (state.mode === 'numeros' || state.mode === 'escribe') {
+    html = `<span class="equation-num target-num">${state.target}</span>`;
+  } else {
+    let opSym = '+';
+    if (state.mode === 'resta') opSym = '−';
+    if (state.mode === 'multiplica') opSym = '×';
+    if (state.mode === 'divide') opSym = '÷';
+    
+    html = `
+      <span class="equation-num a-num">${state.a}</span>
+      <span class="equation-op">${opSym}</span>
+      <span class="equation-num b-num">${state.b}</span>
+      <span class="equation-eq">=</span>
+    `;
+  }
+
+  const expStr = String(state.expected ?? 0);
+  const numDigits = expStr.length;
+
+  let slotsHtml = '<div class="equation-slots">';
+  if (numDigits === 3) {
+    slotsHtml += `
+      <div class="eq-slot-box" data-slot="h" title="Centenas">
+        <div class="eq-slot-drop">${renderSlotContent('h')}</div>
+        <span class="eq-slot-label">C</span>
+      </div>
+      <div class="eq-slot-box" data-slot="t" title="Decenas">
+        <div class="eq-slot-drop">${renderSlotContent('t')}</div>
+        <span class="eq-slot-label">D</span>
+      </div>
+      <div class="eq-slot-box" data-slot="u" title="Unidades">
+        <div class="eq-slot-drop">${renderSlotContent('u')}</div>
+        <span class="eq-slot-label">U</span>
+      </div>
+    `;
+  } else if (numDigits === 2) {
+    slotsHtml += `
+      <div class="eq-slot-box" data-slot="t" title="Decenas">
+        <div class="eq-slot-drop">${renderSlotContent('t')}</div>
+        <span class="eq-slot-label">D</span>
+      </div>
+      <div class="eq-slot-box" data-slot="u" title="Unidades">
+        <div class="eq-slot-drop">${renderSlotContent('u')}</div>
+        <span class="eq-slot-label">U</span>
+      </div>
+    `;
+  } else {
+    slotsHtml += `
+      <div class="eq-slot-box" data-slot="u" title="Unidades">
+        <div class="eq-slot-drop">${renderSlotContent('u')}</div>
+        <span class="eq-slot-label">U</span>
+      </div>
+    `;
+  }
+  slotsHtml += '</div>';
+
+  container.innerHTML = html + slotsHtml;
+
+  container.querySelectorAll('.eq-slot-drop').forEach(drop => {
+    const key = drop.parentElement.dataset.slot;
+    drop.addEventListener('click', e => {
+      if (state.solved || e.target.closest('.placed')) return;
+      if (state.selected !== null) {
+        slots[key] = state.selected;
+        state.selected = null;
+        updateTraySelection();
+        renderLeaves(key);
+        sndPlace(slots[key]);
+      }
+    });
+  });
+}
+
+function renderSlotContent(key) {
+  if (slots[key] !== null) {
+    const w = WORMS[slots[key]];
+    return `<div class="placed" data-slot="${key}">${wormSVG(w, 48, false)}</div>`;
+  }
+  return '<div class="empty-slot-dot">?</div>';
+}
+
+function setupConcreteWorkspace() {
+  const leafWormsBox = $('concreteLeafWorms');
+  const composteraSlotsBox = $('composteraSlots');
+  
+  if (!leafWormsBox || !composteraSlotsBox) return;
+
+  if (state.mode === 'resta') {
+    safeSetHtml(els.taskInstructions, `Quita ${state.b} gusanos del grupo de ${state.a}. Arrastra o toca ${state.b} gusanos a la compostera.`);
+  } else if (state.mode === 'suma') {
+    safeSetHtml(els.taskInstructions, `Junta ${state.a} gusanos y ${state.b} gusanos en el telar.`);
+  } else if (state.mode === 'multiplica') {
+    safeSetHtml(els.taskInstructions, `Forma ${state.a} grupos de ${state.b} gusanos.`);
+  } else if (state.mode === 'divide') {
+    safeSetHtml(els.taskInstructions, `Reparte ${state.a} gusanos en ${state.b} grupos por igual.`);
+  }
+
+  const isLargeCount = state.a > 100;
+  const leafWormsCount = state.mode === 'resta' ? (state.a - concreteComposted) : state.a;
+
+  if (isLargeCount) {
+    // 1. Render single clean mini worm count indicator on the leaf
+    leafWormsBox.innerHTML = `
+      <div class="concrete-summary-box" style="cursor:pointer;">
+        <span class="summary-count">${leafWormsCount}</span>
+      </div>
+    `;
+
+    // 2. Render single compost count indicator in the compostera
+    let composteraHtml = '';
+    if (state.mode === 'resta') {
+      composteraHtml = `
+        <div class="concrete-summary-box compost" style="cursor:pointer;">
+          <span class="summary-count">${concreteComposted} / ${state.b}</span>
+        </div>
+      `;
+    }
+    composteraSlotsBox.innerHTML = composteraHtml;
+
+    // Click interactions for summary boxes in subtraction mode
+    const leafSummary = leafWormsBox.querySelector('.concrete-summary-box');
+    if (leafSummary) {
+      leafSummary.addEventListener('click', () => {
+        if (state.mode === 'resta' && concreteComposted < state.b) {
+          concreteComposted++;
+          sndPlace(0);
+          setupConcreteWorkspace();
+        }
+      });
+    }
+
+    const compostSummary = composteraSlotsBox.querySelector('.concrete-summary-box.compost');
+    if (compostSummary) {
+      compostSummary.addEventListener('click', () => {
+        if (state.mode === 'resta' && concreteComposted > 0) {
+          concreteComposted--;
+          sndSoft();
+          setupConcreteWorkspace();
+        }
+      });
+    }
+
+  } else {
+    // Determine worm scaling size for standard view
+    let wormSize = 44;
+    if (state.a > 50) {
+      wormSize = 20;
+    } else if (state.a > 20) {
+      wormSize = 30;
+    }
+
+    // Render plain worms on the leaf
+    let leafWormsHtml = '';
+    const leafWormsCountCapped = Math.min(100, leafWormsCount);
+    for (let i = 0; i < leafWormsCountCapped; i++) {
+      leafWormsHtml += `<div class="plain-worm" data-index="${i}" style="width:${wormSize}px; height:${wormSize}px;"><img src="${WORMS[0].img}" alt="gusano" class="worm-art" style="width:100%; height:auto;"></div>`;
+    }
+    leafWormsBox.innerHTML = leafWormsHtml;
+
+    // Render slots in the compostera
+    let composteraHtml = '';
+    if (state.mode === 'resta') {
+      const composteraCount = Math.min(100, state.b);
+      for (let i = 0; i < composteraCount; i++) {
+        if (i < concreteComposted) {
+          composteraHtml += `<div class="compostera-slot filled" data-index="${i}" style="width:${wormSize}px; height:${wormSize}px;"><img src="${WORMS[0].img}" alt="gusano" class="worm-art" style="width:100%; height:auto;"></div>`;
+        } else {
+          composteraHtml += `<div class="compostera-slot empty" data-index="${i}" style="width:${wormSize}px; height:${wormSize}px;"></div>`;
+        }
+      }
+    }
+    composteraSlotsBox.innerHTML = composteraHtml;
+
+    // Click interaction for concrete worms grid
+    leafWormsBox.querySelectorAll('.plain-worm').forEach(worm => {
+      worm.addEventListener('click', () => {
+        if (state.mode === 'resta' && concreteComposted < state.b) {
+          concreteComposted++;
+          sndPlace(0);
+          setupConcreteWorkspace();
+        }
+      });
+    });
+
+    composteraSlotsBox.querySelectorAll('.compostera-slot.filled').forEach(worm => {
+      worm.addEventListener('click', () => {
+        if (state.mode === 'resta' && concreteComposted > 0) {
+          concreteComposted--;
+          sndSoft();
+          setupConcreteWorkspace();
+        }
+      });
+    });
+  }
+}
+
+function updateSpeechAvatar() {
+  const avatarImg = $('feedbackAvatar');
+  if (avatarImg) {
+    const characterIndex = state.expected !== null ? (Math.abs(state.expected) % 10) : 4;
+    const container = avatarImg.parentElement;
+    if (container) {
+      container.innerHTML = `<img id="feedbackAvatar" class="worm-art" src="${WORMS[characterIndex].img}" alt="${WORMS[characterIndex].name}" style="width:74px;height:auto;">`;
+    }
+  }
+}
+
+function updateDiaryStats() {
+  const sessionHistory = state.history;
+  
+  if ($('statActivity')) $('statActivity').textContent = modeNames[state.mode];
+  if ($('statExercises')) $('statExercises').textContent = sessionHistory.length;
+  if ($('statCorrect')) $('statCorrect').textContent = sessionHistory.filter(x => x.correct).length;
+  if ($('statErrors')) $('statErrors').textContent = sessionHistory.reduce((a, x) => a + x.errors, 0);
+  if ($('statHints')) $('statHints').textContent = sessionHistory.reduce((a, x) => a + x.hints, 0) + state.hints;
+  if ($('statBreaths')) $('statBreaths').textContent = sessionHistory.reduce((a, x) => a + x.breaths, 0) + state.breathCount;
+  
+  if ($('statTime')) {
+    const elapsed = Math.round((performance.now() - state.taskStartedAt) / 1000);
+    const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const secs = String(elapsed % 60).padStart(2, '0');
+    $('statTime').textContent = `${mins}:${secs}`;
+  }
+}
+
+function updateGardenPanel() {
+  if ($('seedsFlowerCount')) $('seedsFlowerCount').textContent = state.seeds;
+  if ($('seedsCountValue')) $('seedsCountValue').textContent = state.seeds;
+}
+
+function generateTask(){
+  const d=difficulty(), r=taskRanges();
+  if(state.mode==='escribe'){
+    state.target=null;
+    state.expected=null;
+    safeSetText(els.prompt, 'Escribe tu propio número para jugar.');
+    if (els.check) els.check.disabled=true;
+    if (els.clear) els.clear.disabled=true;
+  }
+  if(state.mode==='numeros'){const [min,max]=r.numeros;state.target=randInt(min,max);state.expected=state.target;safeSetText(els.prompt, 'Forma el número '+state.target+'.');}
+  if(state.mode==='suma'){const [min,max]=r.suma;state.a=randInt(min,max);state.b=randInt(min,max);state.expected=state.a+state.b;safeSetText(els.prompt, state.a+' + '+state.b+' = ?');}
+  if(state.mode==='resta'){const [min,max]=r.resta;state.a=randInt(min,max);state.b=randInt(0,state.a);state.expected=state.a-state.b;safeSetText(els.prompt, state.a+' − '+state.b+' = ?');}
+  if(state.mode==='multiplica'){const [min,max]=r.multiplica;state.a=randInt(min,max);state.b=randInt(min,max);state.expected=state.a*state.b;safeSetText(els.prompt, state.a+' × '+state.b+' = ?');}
+  if(state.mode==='divide'){const [min,max]=r.divide;const d0=randInt(min,max),q=randInt(min,max);state.a=d0*q;state.b=d0;state.expected=q;safeSetText(els.prompt, state.a+' ÷ '+state.b+' = ?');}
+}
+function newTask(reason='new_task'){
+  state.solved=false;state.errors=0;state.selected=null;state.hints=0;state.breathCount=0;state.taskIndex++;state.taskStartedAt=performance.now();
+  concreteComposted = 0;
+  slots.h=slots.t=slots.u=null;
+  if (els.continueBtn) els.continueBtn.hidden=true;
+  if (els.check) els.check.disabled=false;
+  if (els.calm) els.calm.hidden=true;
+  setMessage('');
+  updateTraySelection();
+  generateTask();
+  setStage();
+  renderLeaves();
+  renderVisual();
+  logEvent(reason,{action:'task_start'});
+  updateDashboard();
+  updateDifficultyUI();
+}
+function submitCustomNumber(){
+  const input = $('customNumber');
+  if(!input) return;
+  const val = parseInt(input.value);
+  if(isNaN(val) || val < 0 || val > 999){
+    setMessage('Por favor, ingresa un número válido entre 0 y 999.', 'soft');
+    tone(300, .12, "sine", .06);
+    return;
+  }
+  state.target = val;
+  state.expected = val;
+  safeSetText(els.prompt, 'Forma el número ' + val + '.');
+  setMessage('');
+  if (els.check) els.check.disabled = false;
+  if (els.clear) els.clear.disabled = false;
+  renderVisual();
+}
+function getHint(){
+  state.hints++;logEvent('hint_used',{hintNumber:state.hints});
+  if(state.mode==='numeros' || state.mode==='escribe'){
+    const h=Math.floor(state.target/100), d=Math.floor((state.target%100)/10), u=state.target%10;
+    if(state.target<10)return 'El número '+state.target+' vive en la hoja de las unidades.';
+    if(state.target<100)return 'El número '+state.target+' tiene '+d+' decenas y '+u+' unidades.';
+    return 'El número '+state.target+' tiene '+h+' centenas, '+d+' decenas y '+u+' unidades.';
+  }
+  if(state.mode==='suma')return 'Puedes contar '+state.b+' pasos desde '+state.a+'. Si llegas a una decena, puedes pensar en formar un grupo de 10.';
+  if(state.mode==='resta')return 'Imagina '+state.a+' gusanos y aparta '+state.b+'. ¿Cuántos quedan?';
+  if(state.mode==='multiplica')return 'Son '+state.a+' grupos de '+state.b+'. Cuenta de '+state.b+' en '+state.b+'.';
+  if(state.mode==='divide')return 'Reparte '+state.a+' semillas entre '+state.b+' gusanos por igual. ¿Cuántas recibe cada uno?';
+  return 'Respira y observa con calma.';
+}
+function animate(cls){els.taskCard.classList.add(cls);setTimeout(()=>els.taskCard.classList.remove(cls),950);}
+
+/* ================= ADAPTACIÓN Y MÉTRICAS ================= */
+function taskRecord(correct){
+  const elapsed=Math.max(0,Math.round(performance.now()-state.taskStartedAt));
+  const rec={id:uid(),mode:state.mode,difficulty:difficulty(),a:state.a,b:state.b,target:state.target,expected:state.expected,correct,errors:state.errors,hints:state.hints,breaths:state.breathCount,elapsedMs:elapsed,firstAttemptCorrect:correct&&state.errors===0,ts:nowISO(),sessionId:state.session?.id||null};
+  state.history.push(rec); if(state.history.length>200)state.history.shift();
+  logEvent('task_result',rec); return rec;
+}
+function adjustDifficulty(){
+  const records=state.history.filter(x=>x.mode===state.mode).slice(-5);if(records.length<5)return;
+  const firstTry=records.filter(x=>x.firstAttemptCorrect).length/records.length;
+  const avg=records.reduce((a,x)=>a+x.elapsedMs,0)/records.length;
+  const previous=difficulty();
+  let d=previous;
+  if(firstTry>=.8&&avg<30000)d=Math.min(5,d+1);
+  else if(firstTry<=.4||records.filter(x=>x.errors>=2).length>=3)d=Math.max(1,d-1);
+  if(d!==previous){state.difficulty[state.mode]=d;logEvent('difficulty_changed',{from:previous,to:d});setMessage('El jardín ajustó suavemente el próximo nivel.','soft');}
+}
+function masteryForMode(mode){
+  const rec=state.history.filter(x=>x.mode===mode).slice(-10);if(!rec.length)return 0;
+  const score=rec.reduce((sum,x)=>sum+(x.correct?(x.firstAttemptCorrect?1:.75):0),0)/rec.length;
+  return Math.round(score*100);
+}
+function updateDashboard(){
+  const m=masteryForMode(state.mode);els.masteryFill.style.width=m+'%';
+  els.masteryText.textContent=m<40?'Estamos conociendo esta habilidad.':m<70?'La habilidad está creciendo.':'Hay señales de dominio en los últimos ejercicios.';
+  const rec=state.history.filter(x=>x.mode===state.mode).slice(-10);const ft=rec.length?Math.round(rec.filter(x=>x.firstAttemptCorrect).length/rec.length*100):0;
+  els.firstTryMetric.textContent=ft+'%';els.retryMetric.textContent=rec.reduce((a,x)=>a+x.errors,0);
+  const recent=state.history.slice(-1)[0];
+  els.diaryBox.innerHTML=recent?'<strong>🌼 Diario del jardín</strong><br>'+modeNames[recent.mode]+': '+(recent.correct?'resuelto':'aún en práctica')+'. '+recent.errors+' error(es), '+recent.hints+' pista(s) y '+recent.breaths+' pausa(s).':'🌼 <strong>Diario del jardín:</strong> todavía no hay una sesión registrada.';
+  updateStats();
+  updateDiaryStats();
+  updateGardenPanel();
+  updateSpeechAvatar();
+}
+function checkAnswer(){
+  if(state.solved)return;
+  if(!anyPlaced()){setMessage('Coloca al menos un gusano en el telar.','soft');sndSoft();return;}
+  const value=leafValue();
+  logEvent('answer_attempt',{value,expected:state.expected,correct:value===state.expected,errorsBefore:state.errors});
+  if(value===state.expected){
+    state.solved=true;state.seeds++;const rec=taskRecord(true);saveProgress();updateDashboard();plantSeed();
+    setMessage(calmMsgs[randInt(0,calmMsgs.length-1)]+' La semilla crecerá con calma.','good');
+    if (els.check) els.check.disabled=true;
+    if (els.continueBtn) els.continueBtn.hidden=false;
+    if (els.calm) els.calm.hidden=true;
+    animate('happy');sndOk();adjustDifficulty();saveProgress();updateDashboard();
+  }else{
+    state.errors++;state.compost++;saveProgress();updateDashboard();addLeaf();setMessage(wrongMsgs[randInt(0,wrongMsgs.length-1)],'soft');animate('sway');sndNo();
+    logEvent('error',{value,expected:state.expected,errorNumber:state.errors});
+    if(state.errors===3){
+      openMindfulBreathingAlert();
+    }else if(state.errors>=2){
+      if (els.calm) els.calm.hidden=false;
+      logEvent('calm_panel_shown',{errors:state.errors});
+    }
+  }
+}
+
+/* ================= JARDÍN Y PERSISTENCIA ================= */
+function saveProgress(){
+  try{localStorage.setItem('gusanosCalma',JSON.stringify({version:2,seeds:state.seeds,compost:state.compost,difficulty:state.difficulty,history:state.history,session:state.session}));}catch(e){}
+}
+function loadProgress(){
+  try{const s=JSON.parse(localStorage.getItem('gusanosCalma')||'{}');state.seeds=Number(s.seeds)||0;state.compost=Number(s.compost)||0;if(s.difficulty)Object.assign(state.difficulty,s.difficulty);if(Array.isArray(s.history))state.history=s.history.slice(-200);if(s.session)state.session=s.session;}catch(e){}
+  ensureSession();
+}
+function updateStats(){els.stats.innerHTML='<div>Semillas: <strong>'+state.seeds+'</strong></div><div>Hojas de abono: <strong>'+state.compost+'</strong></div><div>Ejercicios registrados: <strong>'+state.history.length+'</strong></div>';}
+function plantSeed(){const p=document.createElement('span');p.className='plant';p.textContent='🌱';els.plants.appendChild(p);setTimeout(()=>{p.textContent='🌼';p.classList.add('bloom');},8000);}
+function addLeaf(){const l=document.createElement('span');l.className='plant';l.textContent='🍂';els.compost.appendChild(l);}
+
+/* ================= RESPIRACIÓN ================= */
+let breathActive=false,breathToken=0;
+
+async function openBreath(){
+  state.breathCount++; logEvent('breath_start', {count:state.breathCount}); saveProgress();
+  breathActive=true; breathToken++; const tk=breathToken;
+  
+  const overlay = els.breathOverlay;
+  const closeBtn = $('closeBreath');
+  if (closeBtn) closeBtn.style.display = 'block'; // Show skip button for manual mode
+  
+  let titleEl = $('breathTitle');
+  if (!titleEl) {
+    titleEl = document.createElement('h2');
+    titleEl.id = 'breathTitle';
+    titleEl.style.cssText = 'margin:0; font-size:2rem; color:#2e7d32; font-family:\'Outfit\', sans-serif; font-weight:900; text-align:center; position:relative; z-index:3; text-shadow: 0 2px 4px rgba(255,255,255,0.7);';
+    overlay.insertBefore(titleEl, els.breathCircle);
+  }
+  titleEl.textContent = 'Respiración de la Calma 🌿';
+  
+  let wormContainer = $('breathWormContainer');
+  if (!wormContainer) {
+    wormContainer = document.createElement('div');
+    wormContainer.id = 'breathWormContainer';
+    wormContainer.className = 'breath-worm-box';
+    overlay.appendChild(wormContainer);
+  }
+  // Use active worm or default Cerito
+  const activeW = state.selected !== null ? state.selected : 0;
+  wormContainer.innerHTML = `<img class="worm-art" src="${WORMS[activeW].img}" alt="${WORMS[activeW].name}" style="width:100%; height:auto;" />`;
+  
+  overlay.hidden=false;
+  
+  while(breathActive&&tk===breathToken){
+    // Inhale
+    els.breathText.textContent='Inhala';
+    els.breathCircle.style.transform='scale(1.5)';
+    wormContainer.style.transform='scale(1.5)'; // Chest inflates
+    await sleep(3000); if(!breathActive||tk!==breathToken)break;
+    
+    // Hold
+    els.breathText.textContent='Sostén';
+    await sleep(1500); if(!breathActive||tk!==breathToken)break;
+    
+    // Exhale
+    els.breathText.textContent='Exhala';
+    els.breathCircle.style.transform='scale(1)';
+    wormContainer.style.transform='scale(1)'; // Chest deflates
+    await sleep(4500);
+  }
+}
+
+async function openMindfulBreathingAlert() {
+  state.breathCount++; logEvent('mindful_breathing_alert_start', { count: state.breathCount }); saveProgress();
+  breathActive = true; breathToken++; const tk = breathToken;
+  
+  const overlay = els.breathOverlay;
+  const closeBtn = $('closeBreath');
+  if (closeBtn) closeBtn.style.display = 'none'; // Hide skip button during auto alert
+  
+  let titleEl = $('breathTitle');
+  if (!titleEl) {
+    titleEl = document.createElement('h2');
+    titleEl.id = 'breathTitle';
+    titleEl.style.cssText = 'margin:0; font-size:2rem; color:#2e7d32; font-family:\'Outfit\', sans-serif; font-weight:900; text-align:center; position:relative; z-index:3; text-shadow: 0 2px 4px rgba(255,255,255,0.7);';
+    overlay.insertBefore(titleEl, els.breathCircle);
+  }
+  titleEl.textContent = '¡Hagamos una pausa para respirar juntos! 🌿';
+  
+  let wormContainer = $('breathWormContainer');
+  if (!wormContainer) {
+    wormContainer = document.createElement('div');
+    wormContainer.id = 'breathWormContainer';
+    wormContainer.className = 'breath-worm-box';
+    overlay.appendChild(wormContainer);
+  }
+  
+  // Use active worm or default Cerito
+  const activeW = state.selected !== null ? state.selected : 0;
+  wormContainer.innerHTML = `<img class="worm-art" src="${WORMS[activeW].img}" alt="${WORMS[activeW].name}" style="width:100%; height:auto;" />`;
+  
+  overlay.hidden = false;
+  
+  // Run 3 deep breathing cycles
+  for (let cycle = 1; cycle <= 3; cycle++) {
+    if (!breathActive || tk !== breathToken) break;
+    
+    titleEl.textContent = `Pausa respiratoria: Ciclo ${cycle} de 3 🌿`;
+    
+    // Inhale
+    els.breathText.textContent = 'Inhala...';
+    els.breathCircle.style.transform = 'scale(1.5)';
+    wormContainer.style.transform = 'scale(1.5)';
+    await sleep(3000);
+    
+    if (!breathActive || tk !== breathToken) break;
+    
+    // Hold
+    els.breathText.textContent = 'Sostén...';
+    await sleep(1500);
+    
+    if (!breathActive || tk !== breathToken) break;
+    
+    // Exhale
+    els.breathText.textContent = 'Exhala...';
+    els.breathCircle.style.transform = 'scale(1)';
+    wormContainer.style.transform = 'scale(1)';
+    await sleep(4500);
+  }
+  
+  if (breathActive && tk === breathToken) {
+    titleEl.textContent = '¡Excelente! Ahora podemos seguir con más calma. 🌸';
+    els.breathText.textContent = '¡Muy bien!';
+    await sleep(2000);
+    closeBreath();
+    state.errors = 0; // Reset errors so they can try again fresh
+    saveProgress();
+    updateDashboard();
+  }
+}
+
+function closeBreath(){breathActive=false;breathToken++;els.breathOverlay.hidden=true;els.breathCircle.style.transform='scale(1)';logEvent('breath_end',{});saveProgress();}
+
+/* Garden Viewer Overlay functions */
+function openGardenModal() {
+  const modal = $('gardenModal');
+  const modalPlants = $('modalPlants');
+  const modalCompost = $('modalCompost');
+  if (!modal || !modalPlants || !modalCompost) return;
+  
+  modalPlants.innerHTML = $('plants').innerHTML || '<span style="font-size:1.05rem;color:#7d8c69;font-weight:700;">Aún no has plantado flores. ¡Resuelve un ejercicio para comenzar! 🌼</span>';
+  modalCompost.innerHTML = $('compostPlants').innerHTML || '<span style="font-size:1.05rem;color:#7d8c69;font-weight:700;">La compostera está limpia de hojas de abono. 🍂</span>';
+  
+  modal.hidden = false;
+  logEvent('garden_modal_opened', { seeds: state.seeds, compost: state.compost });
+}
+
+function closeGardenModal() {
+  const modal = $('gardenModal');
+  if (modal) modal.hidden = true;
+  logEvent('garden_modal_closed', {});
+}
+
+/* ================= SESIONES DE PILOTO ================= */
+function openAdult(){
+  const s=state.session||{};$('participantCode').value=s.participantCode||'';$('ageBand').value=s.ageBand||'5-6';$('sessionType').value=s.type||'pilot';
+  $('adultSummary').innerHTML='Sesión: <strong>'+(s.id||'—')+'</strong><br>Eventos: <strong>'+(s.events?.length||0)+'</strong><br>Ejercicios: <strong>'+state.history.length+'</strong>';
+  $('adultPanel').hidden=false;
+}
+function startSession(){
+  state.session={id:uid(),participantCode:$('participantCode').value.trim().slice(0,20),ageBand:$('ageBand').value,type:$('sessionType').value,startedAt:nowISO(),events:[]};
+  state.history=[];state.taskIndex=0;state.difficulty={numeros:1,suma:1,resta:1,multiplica:1,divide:1,escribe:1};
+  els.sessionLabel.textContent='Sesión '+state.session.id+' · '+state.session.type;logEvent('session_start',{ageBand:state.session.ageBand});saveProgress();$('adultPanel').hidden=true;newTask('session_task_start');updateDashboard();
+}
+function csvEscape(v){const s=String(v??'');return '"'+s.replaceAll('"','""')+'"';}
+function downloadText(name,text,type){const blob=new Blob([text],{type});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+function exportSession(){ensureSession();const payload={project:'Gusanos Calma',schemaVersion:2,exportedAt:nowISO(),session:state.session,history:state.history,difficulty:state.difficulty};downloadText('gusanos-calma-'+state.session.id+'.json',JSON.stringify(payload,null,2),'application/json');}
+function exportCSV(){ensureSession();const rows=[['sessionId','participantCode','ageBand','sessionType','taskId','mode','difficulty','a','b','target','expected','correct','errors','hints','breaths','elapsedMs','firstAttemptCorrect','timestamp']];state.history.forEach(r=>rows.push([state.session.id,state.session.participantCode,state.session.ageBand,state.session.type,r.id,r.mode,r.difficulty,r.a,r.b,r.target,r.expected,r.correct,r.errors,r.hints,r.breaths,r.elapsedMs,r.firstAttemptCorrect,r.ts]));downloadText('gusanos-calma-'+state.session.id+'.csv',rows.map(x=>x.map(csvEscape).join(',')).join('\n'),'text/csv;charset=utf-8');}
+function clearPilotData(){if(confirm('Esto borrará los datos locales de Gusanos Calma en este navegador. ¿Continuar?')){localStorage.removeItem('gusanosCalma');location.reload();}}
+
+function updateDifficultyUI(){
+  const d = difficulty();
+  document.querySelectorAll('.diff-circle').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.level) === d);
+  });
+  
+  const r = taskRanges();
+  const range = r[state.mode === 'escribe' ? 'numeros' : state.mode];
+  if (range && $('difficultyRangeLabel')) {
+    $('difficultyRangeLabel').textContent = 'Rango: ' + range[0] + ' - ' + range[1];
+  }
+  
+  const phase = d <= 2 ? 'concreta' : d <= 4 ? 'pictorica' : 'abstracta';
+  document.querySelectorAll('.phase-item').forEach(item => {
+    const badge = item.querySelector('.phase-badge');
+    if (badge) {
+      badge.classList.toggle('active', item.dataset.phase === phase);
+    }
+  });
+}
+
+/* ================= EVENTOS ================= */
+document.querySelectorAll('.mode-btn').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('.mode-btn').forEach(x=>x.classList.remove('active'));
+  btn.classList.add('active');
+  state.mode=btn.dataset.mode;
+  logEvent('mode_changed',{mode:state.mode});
+  newTask('mode_task_start');
+}));
+
+document.querySelectorAll('.diff-circle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const level = parseInt(btn.dataset.level);
+    state.difficulty[state.mode] = level;
+    logEvent('difficulty_manually_changed', {level});
+    updateDifficultyUI();
+    newTask('difficulty_change');
+  });
+});
+
+$('adultBtn').addEventListener('click',openAdult);
+const settingsBtn = $('settingsBtn');
+if (settingsBtn) {
+  settingsBtn.addEventListener('click', openAdult);
+}
+const explainBtn = $('explainBtn');
+if (explainBtn) {
+  explainBtn.addEventListener('click', () => {
+    setMessage('Resuelve la operación matemática colocando a tus amigos gusanos en las hojas correctas.', 'hint');
+  });
+}
+const hintBtn = $('hintBtn');
+if (hintBtn) {
+  hintBtn.addEventListener('click', () => {
+    setMessage(getHint(), 'hint');
+  });
+}
+
+$('closeAdult').addEventListener('click',()=>$('adultPanel').hidden=true);
+$('startSession').addEventListener('click',startSession);
+$('exportSession').addEventListener('click',exportSession);
+$('exportCSV').addEventListener('click',exportCSV);
+$('clearPilotData').addEventListener('click',clearPilotData);
+
+$('breathBtn').addEventListener('click',openBreath);
+$('closeBreath').addEventListener('click',closeBreath);
+$('calmBreath').addEventListener('click',openBreath);
+$('calmHint').addEventListener('click',()=>setMessage(getHint(),'hint'));
+$('calmTry').addEventListener('click',()=>{
+  state.retries++;
+  logEvent('retry',{retryNumber:state.retries});
+  els.calm.hidden=true;
+  setMessage('Vamos de nuevo, con calma.','soft');
+});
+
+els.check.addEventListener('click',checkAnswer);
+els.continueBtn.addEventListener('click',()=>newTask('continue'));
+els.clear.addEventListener('click',()=>{
+  if(state.solved)return;
+  slots.h=slots.t=slots.u=null;
+  concreteComposted = 0;
+  renderLeaves();
+  if (state.mode !== 'numeros' && state.mode !== 'escribe') {
+    setupConcreteWorkspace();
+  }
+  logEvent('clear_board',{});
+  sndSoft();
+});
+
+$('muteBtn').addEventListener('click',()=>{
+  audioOn=!audioOn;
+  $('muteBtn').innerHTML=audioOn?'🔊<span>Sonido</span>':'🔇<span>Silencio</span>';
+  logEvent('audio_toggle',{enabled:audioOn});
+});
+
+$('adultPanel').addEventListener('click',e=>{if(e.target.id==='adultPanel')$('adultPanel').hidden=true;});
+
+const viewGardenBtn = $('viewGardenBtn');
+if (viewGardenBtn) viewGardenBtn.addEventListener('click', openGardenModal);
+
+const closeGardenModalBtn = $('closeGardenModal');
+if (closeGardenModalBtn) closeGardenModalBtn.addEventListener('click', closeGardenModal);
+
+const viewHistoryBtn = $('viewHistoryBtn');
+if (viewHistoryBtn) viewHistoryBtn.addEventListener('click', openAdult);
+
+const gardenModalEl = $('gardenModal');
+if (gardenModalEl) {
+  gardenModalEl.addEventListener('click', e => {
+    if (e.target.id === 'gardenModal') closeGardenModal();
+  });
+}
+
+/* Real-time dashboard ticker */
+setInterval(() => {
+  if (!state.solved && state.taskStartedAt > 0) {
+    updateDiaryStats();
+  }
+}, 1000);
+
+/* ================= INICIO ================= */
+loadProgress();
+if(state.session?.participantCode)els.sessionLabel.textContent='Sesión '+state.session.id+' · '+state.session.type;
+updateStats();
+renderTray();
+renderCompanions();
+newTask('initial_task_start');
+updateDashboard();
+updateDifficultyUI();
+</script>
+</body>
+</html>

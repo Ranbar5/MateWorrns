@@ -1,0 +1,25 @@
+{
+  "version": "6.0",
+  "description": "Recursos visuales de Gusanos Calma — Jardín",
+  "characters": [
+    "cerito.png",
+    "unita.png",
+    "dosito.png",
+    "tresin.png",
+    "cuatrito.png",
+    "cincon.png",
+    "seisin.png",
+    "sietebrote.png",
+    "ochoonda.png",
+    "nuevito.png"
+  ],
+  "companions": [
+    "milo.svg",
+    "mili.svg",
+    "mina.svg",
+    "cielo.svg",
+    "cienita.svg"
+  ],
+  "background": "",
+  "ui": "assets/ui/garden-v6.css"
+}
