@@ -315,8 +315,6 @@ img, svg, canvas, video { max-width:100%; }
     padding:14px;
     border-radius:22px;
   }
-  #taskCard{order:1;}
-  #sidebar{order:2;}
 
   #stageBadge{font-size:.78rem;}
   #taskPrompt{
@@ -509,7 +507,7 @@ img, svg, canvas, video { max-width:100%; }
   button:hover{transform:none;}
 }
 </style>
-<link rel="stylesheet" href="assets/ui/garden-v6.css">
+<link rel="stylesheet" href="assets/ui/garden-v6.css?v=6.1">
 </head>
 <body>
 <main class="app">
@@ -534,6 +532,7 @@ img, svg, canvas, video { max-width:100%; }
       <button class="mode-btn" data-mode="resta">Restar</button>
       <button class="mode-btn" data-mode="multiplica">Multiplicar</button>
       <button class="mode-btn" data-mode="divide">Dividir</button>
+      <button class="mode-btn" data-mode="recta">Recta numérica</button>
       <button class="mode-btn" data-mode="escribe" style="display:none;">Escribe y forma</button>
     </nav>
 
@@ -612,6 +611,11 @@ img, svg, canvas, video { max-width:100%; }
         <div class="leaf" data-slot="h"><span class="place-label">Centenas</span><div class="leaf-drop"></div></div>
         <div class="leaf" data-slot="t"><span class="place-label">Decenas</span><div class="leaf-drop"></div></div>
         <div class="leaf" data-slot="u"><span class="place-label">Unidades</span><div class="leaf-drop"></div></div>
+      </div>
+
+      <!-- 3.3. Recta Numérica operations area -->
+      <div id="rectaNumericaArea" style="display:none; width:100%;">
+        <!-- Dynamic content for Recta Numérica activities will be populated here -->
       </div>
 
       <!-- 3.2. Concrete operations area (For Sum/Resta/etc.) -->
@@ -1090,7 +1094,8 @@ function taskRanges(){
     suma:[[0,5],[0,10],[0,20],[10,50],[20,99]][d-1],
     resta:[[0,10],[0,20],[0,50],[10,99],[20,150]][d-1],
     multiplica:[[1,3],[1,5],[2,7],[3,10],[4,12]][d-1],
-    divide:[[1,3],[1,5],[1,7],[2,10],[3,12]][d-1]
+    divide:[[1,3],[1,5],[1,7],[2,10],[3,12]][d-1],
+    recta:[[0,9],[0,20],[10,50],[10,99],[100,999]][d-1]
   };
 }
 let concreteComposted = 0;
@@ -1105,18 +1110,26 @@ function renderVisual(){
   // Hide/Show correct area based on mode
   const placeValueTelar = $('placeValueTelar');
   const concreteOpsArea = $('concreteOpsArea');
+  const rectaNumericaArea = $('rectaNumericaArea');
   
   if (state.mode === 'numeros' || state.mode === 'escribe') {
     if (placeValueTelar) placeValueTelar.style.display = 'grid';
     if (concreteOpsArea) concreteOpsArea.style.display = 'none';
+    if (rectaNumericaArea) rectaNumericaArea.style.display = 'none';
     if (state.mode === 'escribe' && state.target === null) {
       safeSetHtml(els.taskInstructions, 'Ingresa un número en la caja para comenzar a jugar.');
     } else {
       safeSetHtml(els.taskInstructions, 'Representa el número colocando a tus amigos gusanos en las hojas correctas.');
     }
+  } else if (state.mode === 'recta') {
+    if (placeValueTelar) placeValueTelar.style.display = 'none';
+    if (concreteOpsArea) concreteOpsArea.style.display = 'none';
+    if (rectaNumericaArea) rectaNumericaArea.style.display = 'block';
+    setupRectaWorkspace();
   } else {
     if (placeValueTelar) placeValueTelar.style.display = 'none';
     if (concreteOpsArea) concreteOpsArea.style.display = 'block';
+    if (rectaNumericaArea) rectaNumericaArea.style.display = 'none';
     setupConcreteWorkspace();
   }
 
@@ -1127,6 +1140,11 @@ function renderVisual(){
 function renderEquation() {
   const container = $('equationText');
   if (!container) return;
+
+  if (state.mode === 'recta') {
+    container.innerHTML = '';
+    return;
+  }
 
   if (state.mode === 'escribe' && state.target === null) {
     container.innerHTML = `
@@ -1287,6 +1305,423 @@ function setupConcreteWorkspace() {
   }
 }
 
+function generateRectaTask() {
+  const d = difficulty();
+  const subtypes = ['vecinos', 'saltos', 'ordenar', 'sumas'];
+  const subtype = subtypes[randInt(0, subtypes.length - 1)];
+  state.rectaSubtype = subtype;
+  state.rectaData = {
+    slots: {},
+    selectedOption: null,
+    selectedAnswer: null
+  };
+
+  if (subtype === 'vecinos') {
+    let target = 15;
+    if (d === 1) target = randInt(5, 15);
+    else if (d === 2) target = randInt(15, 30);
+    else if (d === 3) target = randInt(30, 70);
+    else if (d === 4) target = randInt(70, 100);
+    else target = randInt(100, 500);
+
+    state.expected = target;
+    safeSetText(els.prompt, `Los vecinos de ${target}: ¿Quién va antes (-1) y quién después (+1)?`);
+    safeSetHtml(els.taskInstructions, 'Arrastra o selecciona los números de la caja para colocarlos a la izquierda (antes) y derecha (después).');
+    
+    const correct1 = target - 1;
+    const correct2 = target + 1;
+    let dist1 = target - 2;
+    let dist2 = target + 2;
+    if (dist1 < 0) dist1 = target + 3;
+    
+    const options = [correct1, correct2, dist1, dist2];
+    options.sort(() => Math.random() - 0.5);
+
+    state.rectaData.target = target;
+    state.rectaData.options = options;
+    state.rectaData.slots = { antes: null, despues: null };
+  } 
+  else if (subtype === 'saltos') {
+    const seriesType = randInt(1, 3);
+    let start = 0;
+    let step = 2;
+
+    if (seriesType === 1) {
+      step = 2;
+      start = randInt(0, 4) * 2;
+    } else if (seriesType === 2) {
+      step = 5;
+      start = randInt(0, 3) * 5;
+    } else {
+      step = 10;
+      start = randInt(0, 2) * 10;
+    }
+
+    const sequence = [];
+    for (let i = 0; i < 7; i++) {
+      sequence.push(start + i * step);
+    }
+
+    const hideIndexes = [3, 5];
+    if (seriesType === 3) {
+      hideIndexes[0] = 2;
+    }
+
+    const correctAnswers = hideIndexes.map(idx => sequence[idx]);
+    const options = [...correctAnswers];
+    options.push(sequence[0] + 8 * step);
+    options.push(sequence[1] + 9 * step);
+    options.sort(() => Math.random() - 0.5);
+
+    state.expected = 1;
+    safeSetText(els.prompt, `Completa la serie de saltos de ${step} en ${step}:`);
+    safeSetHtml(els.taskInstructions, 'Completa los números vacíos eligiendo las opciones correctas del banco.');
+
+    state.rectaData.sequence = sequence;
+    state.rectaData.hideIndexes = hideIndexes;
+    state.rectaData.correctAnswers = correctAnswers;
+    state.rectaData.options = options;
+    state.rectaData.slots = {};
+    hideIndexes.forEach(idx => {
+      state.rectaData.slots[idx] = null;
+    });
+  }
+  else if (subtype === 'ordenar') {
+    let rangeMax = 50;
+    if (d === 1) rangeMax = 15;
+    else if (d === 2) rangeMax = 35;
+    else if (d === 3) rangeMax = 60;
+    else if (d === 4) rangeMax = 100;
+    else rangeMax = 500;
+
+    const numbers = [];
+    while (numbers.length < 4) {
+      const num = randInt(5, rangeMax);
+      if (!numbers.includes(num)) numbers.push(num);
+    }
+
+    const ordered = [...numbers].sort((a, b) => a - b);
+
+    state.expected = 1;
+    safeSetText(els.prompt, `Ordena de menor a mayor:`);
+    safeSetHtml(els.taskInstructions, 'Coloca los 4 números en orden ascendente (de más pequeño a más grande).');
+
+    state.rectaData.numbers = numbers;
+    state.rectaData.ordered = ordered;
+    state.rectaData.options = [...numbers];
+    state.rectaData.slots = { 0: null, 1: null, 2: null, 3: null };
+  }
+  else if (subtype === 'sumas') {
+    let maxResult = 20;
+    let a = randInt(1, 15);
+    let b = randInt(2, 6);
+    while (a + b > maxResult) {
+      a = randInt(1, 12);
+      b = randInt(2, 6);
+    }
+    const answer = a + b;
+    state.expected = answer;
+
+    safeSetText(els.prompt, `Suma en la recta: ${a} + ${b} = ?`);
+    safeSetHtml(els.taskInstructions, 'Empiezas en el punto naranja y das los saltos curvados a la derecha. ¿En qué número terminas?');
+    
+    state.rectaData.a = a;
+    state.rectaData.b = b;
+    state.rectaData.answer = answer;
+    state.rectaData.selectedAnswer = null;
+  }
+}
+
+function renderStaticHelperLine(minVal, maxVal) {
+  const range = maxVal - minVal;
+  const interval = 600 / range;
+  return `
+    <div class="static-helper-line-container">
+      <div style="font-size:0.72rem;font-weight:800;color:#796e62;text-align:center;margin-bottom:2px;">Recta Numérica de Referencia 📏</div>
+      <svg class="svg-number-line" viewBox="-10 -15 620 45">
+        <line class="number-line-base-line" x1="0" y1="10" x2="600" y2="10" style="stroke-width: 4;" />
+        ${Array.from({ length: range + 1 }).map((_, i) => {
+          const val = minVal + i;
+          const x = i * interval;
+          return `
+            <line class="number-line-tick" x1="${x}" y1="5" x2="${x}" y2="15" style="stroke-width:2.5;" />
+            <text class="number-line-text" x="${x}" y="28" style="font-size:10px;">${val}</text>
+          `;
+        }).join('')}
+      </svg>
+    </div>
+  `;
+}
+
+function setupRectaWorkspace() {
+  const container = $('rectaNumericaArea');
+  if (!container) return;
+
+  const subtype = state.rectaSubtype;
+  const data = state.rectaData;
+  let html = '';
+
+  if (subtype === 'vecinos') {
+    html += renderStaticHelperLine(Math.max(0, data.target - 10), data.target + 10);
+    html += `
+      <div class="recta-container">
+        <div class="vecinos-board">
+          <div class="vecinos-column">
+            <span class="vecinos-label">Antes (-1)</span>
+            <div class="vecinos-card-slot ${data.slots.antes ? 'filled' : ''} ${data.selectedSlot === 'antes' ? 'hover' : ''}" data-slot="antes">
+              ${data.slots.antes !== null ? data.slots.antes : '?'}
+            </div>
+          </div>
+          <div class="vecinos-column" style="flex: 0.8;">
+            <span class="vecinos-label" style="opacity: 0;">Número</span>
+            <div class="vecinos-center-card">
+              ${data.target}
+            </div>
+          </div>
+          <div class="vecinos-column">
+            <span class="vecinos-label">Después (+1)</span>
+            <div class="vecinos-card-slot ${data.slots.despues ? 'filled' : ''} ${data.selectedSlot === 'despues' ? 'hover' : ''}" data-slot="despues">
+              ${data.slots.despues !== null ? data.slots.despues : '?'}
+            </div>
+          </div>
+        </div>
+        <div class="number-bank">
+          ${data.options.map((opt) => {
+            const isUsed = data.slots.antes === opt || data.slots.despues === opt;
+            if (isUsed) return '';
+            const isSelected = data.selectedOption === opt;
+            return `<div class="number-card-option ${isSelected ? 'selected' : ''}" data-value="${opt}">${opt}</div>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+  else if (subtype === 'saltos') {
+    const maxVal = data.sequence[6];
+    html += renderStaticHelperLine(0, maxVal);
+    html += `
+      <div class="recta-container">
+        <div class="sequence-row">
+          ${data.sequence.map((val, idx) => {
+            const isHidden = data.hideIndexes.includes(idx);
+            if (isHidden) {
+              const placedVal = data.slots[idx];
+              return `<div class="sequence-slot ${placedVal ? 'filled' : ''}" data-slot="${idx}">${placedVal !== null ? placedVal : '?'}</div>`;
+            } else {
+              return `<div class="sequence-item">${val}</div>`;
+            }
+          }).reduce((acc, current, idx) => {
+            if (idx === 0) return [current];
+            return acc.concat('<span class="sequence-arrow">→</span>', current);
+          }, []).join('')}
+        </div>
+        <div class="number-bank">
+          ${data.options.map((opt) => {
+            const isUsed = Object.values(data.slots).includes(opt);
+            if (isUsed) return '';
+            const isSelected = data.selectedOption === opt;
+            return `<div class="number-card-option ${isSelected ? 'selected' : ''}" data-value="${opt}">${opt}</div>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+  else if (subtype === 'ordenar') {
+    html += `
+      <div class="recta-container">
+        <div class="sorting-slots-grid">
+          ${[0, 1, 2, 3].map((slotIdx) => {
+            const labels = ['1.º Menor', '2.º', '3.º', '4.º Mayor'];
+            const sublabels = ['(El más chico)', '', '', '(El más grande)'];
+            const val = data.slots[slotIdx];
+            return `
+              <div class="sorting-column">
+                <div class="sorting-slot ${val ? 'filled' : ''}" data-slot="${slotIdx}">
+                  ${val !== null ? val : '?'}
+                </div>
+                <div class="sorting-slot-label">
+                  <strong>${labels[slotIdx]}</strong>
+                  ${sublabels[slotIdx] ? `<span style="display:block;font-size:0.65rem;opacity:0.8;margin-top:2px;">${sublabels[slotIdx]}</span>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div class="number-bank">
+          ${data.options.map((opt) => {
+            const isUsed = Object.values(data.slots).includes(opt);
+            if (isUsed) return '';
+            const isSelected = data.selectedOption === opt;
+            return `<div class="number-card-option ${isSelected ? 'selected' : ''}" data-value="${opt}">${opt}</div>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+  else if (subtype === 'sumas') {
+    html += `
+      <div class="recta-container">
+        <div class="svg-number-line-container">
+          <svg class="svg-number-line" viewBox="-10 -30 620 90">
+            <line class="number-line-base-line" x1="0" y1="20" x2="600" y2="20" />
+            ${Array.from({ length: 21 }).map((_, val) => {
+              const x = val * 30;
+              const isSelected = data.selectedAnswer === val;
+              return `
+                <line class="number-line-tick" x1="${x}" y1="12" x2="${x}" y2="28" />
+                <text class="number-line-text ${isSelected ? 'active' : ''}" x="${x}" y="48">${val}</text>
+                <circle class="interactive-tick-area" cx="${x}" cy="20" r="16" data-value="${val}" />
+              `;
+            }).join('')}
+            ${Array.from({ length: data.b }).map((_, stepIdx) => {
+              const fromVal = data.a + stepIdx;
+              const toVal = fromVal + 1;
+              const xFrom = fromVal * 30;
+              const xTo = toVal * 30;
+              const xCtrl = (xFrom + xTo) / 2;
+              const yCtrl = -12 - (stepIdx * 1.5);
+              return `
+                <path class="jump-arc" d="M ${xFrom} 20 Q ${xCtrl} ${yCtrl} ${xTo} 20" style="animation-delay: ${stepIdx * 0.3}s;" />
+              `;
+            }).join('')}
+            <circle class="number-line-marker" cx="${data.a * 30}" cy="20" r="8" />
+          </svg>
+        </div>
+        <div style="font-size: 1.15rem; font-weight: 750; color: #5c5040; margin-top: 10px; text-align: center;">
+          Haz clic directamente en el número de la recta numérica para responder:
+          <div style="margin-top: 12px; font-size: 1.7rem; color: #2e7d32; font-weight: 900;">
+            ${data.a} + ${data.b} = <span style="border-bottom: 3px dashed #bda88a; padding: 0 16px;">${data.selectedAnswer !== null ? data.selectedAnswer : '?'}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+  setupRectaInteractions();
+}
+
+function setupRectaInteractions() {
+  const container = $('rectaNumericaArea');
+  if (!container || state.solved) return;
+
+  const data = state.rectaData;
+
+  container.querySelectorAll('.number-card-option').forEach(card => {
+    card.addEventListener('click', e => {
+      const val = parseInt(card.dataset.value);
+      if (data.selectedOption === val) {
+        data.selectedOption = null;
+      } else {
+        data.selectedOption = val;
+      }
+      sndPick();
+      setupRectaWorkspace();
+    });
+  });
+
+  container.querySelectorAll('.vecinos-card-slot, .sequence-slot, .sorting-slot').forEach(slot => {
+    slot.addEventListener('click', e => {
+      const slotKey = slot.dataset.slot;
+      
+      if (data.slots[slotKey] !== null) {
+        data.slots[slotKey] = null;
+        sndSoft();
+        setupRectaWorkspace();
+        return;
+      }
+
+      if (data.selectedOption !== null) {
+        Object.keys(data.slots).forEach(k => {
+          if (data.slots[k] === data.selectedOption) {
+            data.slots[k] = null;
+          }
+        });
+
+        data.slots[slotKey] = data.selectedOption;
+        data.selectedOption = null;
+        sndPlace(5);
+        setupRectaWorkspace();
+      }
+    });
+  });
+
+  container.querySelectorAll('.interactive-tick-area').forEach(tick => {
+    tick.addEventListener('click', e => {
+      const val = parseInt(tick.dataset.value);
+      data.selectedAnswer = val;
+      sndPlace(val % 10);
+      setupRectaWorkspace();
+    });
+  });
+}
+
+function checkRectaAnswer() {
+  const subtype = state.rectaSubtype;
+  const data = state.rectaData;
+
+  if (subtype === 'vecinos') {
+    if (data.slots.antes === null || data.slots.despues === null) {
+      return { correct: false, message: 'Coloca un número en la casilla de Antes y otro en la de Después.' };
+    }
+    const correctAntes = data.target - 1;
+    const correctDespues = data.target + 1;
+    const isCorrect = data.slots.antes === correctAntes && data.slots.despues === correctDespues;
+    return {
+      correct: isCorrect,
+      value: data.slots.antes * 1000 + data.slots.despues
+    };
+  }
+  else if (subtype === 'saltos') {
+    const unfilled = Object.keys(data.slots).filter(k => data.slots[k] === null);
+    if (unfilled.length > 0) {
+      return { correct: false, message: 'Completa todos los espacios vacíos de la serie.' };
+    }
+    
+    let isCorrect = true;
+    Object.keys(data.slots).forEach(k => {
+      const expectedVal = data.sequence[parseInt(k)];
+      if (data.slots[k] !== expectedVal) {
+        isCorrect = false;
+      }
+    });
+    
+    return {
+      correct: isCorrect,
+      value: 1
+    };
+  }
+  else if (subtype === 'ordenar') {
+    const unfilled = Object.keys(data.slots).filter(k => data.slots[k] === null);
+    if (unfilled.length > 0) {
+      return { correct: false, message: 'Ordena todos los números colocando uno en cada casilla.' };
+    }
+    
+    let isCorrect = true;
+    for (let i = 0; i < 4; i++) {
+      if (data.slots[i] !== data.ordered[i]) {
+        isCorrect = false;
+      }
+    }
+    return {
+      correct: isCorrect,
+      value: 1
+    };
+  }
+  else if (subtype === 'sumas') {
+    if (data.selectedAnswer === null) {
+      return { correct: false, message: 'Haz clic en el número de la recta numérica para indicar la respuesta.' };
+    }
+    const isCorrect = data.selectedAnswer === data.answer;
+    return {
+      correct: isCorrect,
+      value: data.selectedAnswer
+    };
+  }
+
+  return { correct: false, message: 'Completa el ejercicio.' };
+}
+
 function updateSpeechAvatar() {
   const avatarImg = $('feedbackAvatar');
   if (avatarImg) {
@@ -1335,11 +1770,15 @@ function generateTask(){
   if(state.mode==='resta'){const [min,max]=r.resta;state.a=randInt(min,max);state.b=randInt(0,state.a);state.expected=state.a-state.b;safeSetText(els.prompt, state.a+' − '+state.b+' = ?');}
   if(state.mode==='multiplica'){const [min,max]=r.multiplica;state.a=randInt(min,max);state.b=randInt(min,max);state.expected=state.a*state.b;safeSetText(els.prompt, state.a+' × '+state.b+' = ?');}
   if(state.mode==='divide'){const [min,max]=r.divide;const d0=randInt(min,max),q=randInt(min,max);state.a=d0*q;state.b=d0;state.expected=q;safeSetText(els.prompt, state.a+' ÷ '+state.b+' = ?');}
+  if(state.mode==='recta'){generateRectaTask();}
 }
 function newTask(reason='new_task'){
   state.solved=false;state.errors=0;state.selected=null;state.hints=0;state.breathCount=0;state.taskIndex++;state.taskStartedAt=performance.now();
   concreteComposted = 0;
   slots.h=slots.t=slots.u=null;
+  if (state.mode === 'recta') {
+    state.rectaData = { slots: {}, selectedOption: null, selectedAnswer: null };
+  }
   if (els.continueBtn) els.continueBtn.hidden=true;
   if (els.check) els.check.disabled=false;
   if (els.calm) els.calm.hidden=true;
@@ -1382,6 +1821,13 @@ function getHint(){
   if(state.mode==='resta')return 'Imagina '+state.a+' gusanos y aparta '+state.b+'. ¿Cuántos quedan?';
   if(state.mode==='multiplica')return 'Son '+state.a+' grupos de '+state.b+'. Cuenta de '+state.b+' en '+state.b+'.';
   if(state.mode==='divide')return 'Reparte '+state.a+' semillas entre '+state.b+' gusanos por igual. ¿Cuántas recibe cada uno?';
+  if(state.mode==='recta'){
+    const subtype = state.rectaSubtype;
+    if (subtype === 'vecinos') return 'El antecesor (Antes) es el número que está a la izquierda (-1) y el sucesor (Después) es el que está a la derecha (+1).';
+    if (subtype === 'saltos') return 'Observa de cuánto en cuánto va la serie. Cuenta los pasos del salto.';
+    if (subtype === 'ordenar') return 'Busca primero el número más pequeño y ponlo en el 1.º. Luego el que sigue, hasta llegar al más grande.';
+    if (subtype === 'sumas') return 'Usa la recta numérica. Cuenta los saltos curvados a la derecha del número inicial.';
+  }
   return 'Respira y observa con calma.';
 }
 function animate(cls){els.taskCard.classList.add(cls);setTimeout(()=>els.taskCard.classList.remove(cls),950);}
@@ -1422,10 +1868,29 @@ function updateDashboard(){
 }
 function checkAnswer(){
   if(state.solved)return;
-  if(!anyPlaced()){setMessage('Coloca al menos un gusano en el telar.','soft');sndSoft();return;}
-  const value=leafValue();
-  logEvent('answer_attempt',{value,expected:state.expected,correct:value===state.expected,errorsBefore:state.errors});
-  if(value===state.expected){
+  
+  let correct = false;
+  let value = 0;
+  let validationMessage = '';
+  
+  if (state.mode === 'recta') {
+    const res = checkRectaAnswer();
+    correct = res.correct;
+    value = res.value;
+    validationMessage = res.message;
+    if (validationMessage && !correct) {
+      setMessage(validationMessage, 'soft');
+      sndSoft();
+      return;
+    }
+  } else {
+    if(!anyPlaced()){setMessage('Coloca al menos un gusano en el telar.','soft');sndSoft();return;}
+    value = leafValue();
+    correct = (value === state.expected);
+  }
+
+  logEvent('answer_attempt',{value,expected:state.expected,correct,errorsBefore:state.errors});
+  if(correct){
     state.solved=true;state.seeds++;const rec=taskRecord(true);saveProgress();updateDashboard();plantSeed();
     setMessage(calmMsgs[randInt(0,calmMsgs.length-1)]+' La semilla crecerá con calma.','good');
     if (els.check) els.check.disabled=true;
@@ -1697,9 +2162,20 @@ els.clear.addEventListener('click',()=>{
   if(state.solved)return;
   slots.h=slots.t=slots.u=null;
   concreteComposted = 0;
-  renderLeaves();
-  if (state.mode !== 'numeros' && state.mode !== 'escribe') {
-    setupConcreteWorkspace();
+  if (state.mode === 'recta') {
+    if (state.rectaData && state.rectaData.slots) {
+      Object.keys(state.rectaData.slots).forEach(k => {
+        state.rectaData.slots[k] = null;
+      });
+      state.rectaData.selectedOption = null;
+      state.rectaData.selectedAnswer = null;
+      setupRectaWorkspace();
+    }
+  } else {
+    renderLeaves();
+    if (state.mode !== 'numeros' && state.mode !== 'escribe') {
+      setupConcreteWorkspace();
+    }
   }
   logEvent('clear_board',{});
   sndSoft();

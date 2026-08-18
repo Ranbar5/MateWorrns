@@ -1221,6 +1221,7 @@ html, body {
 }
 
 /* --- Responsive Layout Configurations (Mobile/Tablet) --- */
+/* --- Responsive Layout Configurations (Mobile/Tablet) --- */
 @media (max-width: 1100px) {
   .app {
     grid-template-columns: 220px 1fr;
@@ -1229,6 +1230,30 @@ html, body {
       "sidebar game"
       "right-sidebar right-sidebar"
       "bottom-bar bottom-bar";
+  }
+  #right-sidebar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .diary-stats-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .concrete-workspace-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .concrete-arrow-container {
+    transform: rotate(90deg);
+    margin: 4px auto;
+    width: 40px;
   }
 }
 
@@ -1239,34 +1264,122 @@ html, body {
     gap: 16px;
     padding: 10px;
   }
+  
+  /* Reset grid areas for flex items */
+  #logo-wood, #sidebar-nav, #taskCard, #top-roster-panel, #right-sidebar,
+  .difficulty-panel, .learning-phase-panel, #homeBtn, #bottom-wood-banner {
+    grid-area: auto !important;
+  }
+
+  /* Make #left-sidebar a transparent wrapper so its children flow directly into .app flexbox */
   #left-sidebar {
+    display: contents;
+  }
+
+  /* Explicit ordering of elements on mobile/tablet */
+  #logo-wood {
+    order: 1;
     width: 100%;
+    margin-bottom: 2px;
+  }
+  .menu-header {
+    order: 2;
+    width: 100%;
+    margin-bottom: 2px;
+    display: block !important;
   }
   #sidebar-nav {
+    order: 3;
+    width: 100%;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 8px;
+    margin-bottom: 4px;
+  }
+  #taskCard {
+    order: 4; /* Main gameplay card high priority! */
+    width: 100%;
   }
   #top-roster-panel {
+    order: 5; /* Roster tray rendered directly below the game */
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
   }
+  #right-sidebar {
+    order: 6; /* Stats panel */
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .difficulty-panel {
+    order: 7; /* Config panels pushed to the bottom */
+    width: 100%;
+  }
+  .learning-phase-panel {
+    order: 8; /* Config panels pushed to the bottom */
+    width: 100%;
+  }
+  #homeBtn {
+    order: 9;
+    width: 76px;
+    margin: 8px auto 0;
+  }
+  #bottom-wood-banner {
+    order: 10;
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  /* Compact 5-column grid for worms list instead of single-column scroll */
   #worms {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 6px !important;
+    justify-content: center !important;
+    align-items: flex-end !important;
+    width: 100% !important;
+    padding: 6px 0 2px !important;
   }
-  .concrete-workspace-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
+  .worm-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 90px !important;
+    padding: 2px 0 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
   }
-  .concrete-arrow-container {
-    transform: rotate(90deg);
-    margin: 4px auto;
-    width: 40px;
+  .worm-btn .worm-art {
+    width: auto !important;
+    height: auto !important;
+    max-width: 66px !important;
+    max-height: 66px !important;
   }
+  .worm-btn:before {
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 0.65rem !important;
+    bottom: 22px !important;
+    border-width: 2px !important;
+    margin-bottom: 2px !important;
+  }
+  .worm-btn:after {
+    font-size: 0.6rem !important;
+    line-height: 1.1 !important;
+    margin-top: 1px !important;
+  }
+
   .workspace-feedback-row {
     grid-template-columns: 1fr;
     justify-items: center;
@@ -1283,14 +1396,36 @@ html, body {
   .feedback-actions button {
     flex-grow: 1;
   }
-  #bottom-wood-banner {
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
-  }
   .adult-investigator-btn {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  #worms {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 4px !important;
+  }
+  .worm-btn .worm-art {
+    max-width: 50px !important;
+    max-height: 50px !important;
+  }
+  .worm-btn:before {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 0.58rem !important;
+    bottom: 16px !important;
+  }
+  .worm-btn:after {
+    font-size: 0.52rem !important;
+  }
+}
+
+@media (max-width: 350px) {
+  #worms {
+    grid-template-columns: repeat(4, 1fr) !important;
+    row-gap: 8px !important;
   }
 }
 
@@ -1468,4 +1603,409 @@ html, body {
 .concrete-summary-box.compost .summary-count {
   color: #5d4037;
 }
+
+/* --- Recta Numérica Mode styles --- */
+#sidebar-nav .mode-btn[data-mode="recta"]::before { content: '📏'; color: #795548; }
+
+.recta-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* Number cards options */
+.number-bank {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 15px 0;
+  padding: 12px;
+  background: #fbf9f2;
+  border: 3px dashed #ccd6be;
+  border-radius: 20px;
+  min-height: 76px;
+  width: 100%;
+  max-width: 600px;
+  box-sizing: border-box;
+}
+.number-card-option {
+  background: #fffdf8;
+  border: 3px solid #bda88a;
+  border-radius: 14px;
+  padding: 8px 16px;
+  font-size: 1.35rem;
+  font-weight: 850;
+  color: #5d4e3c;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.06), 0 2px 0 #bda88a;
+  transition: all 0.15s ease;
+  user-select: none;
+  min-width: 54px;
+  text-align: center;
+}
+.number-card-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(0,0,0,0.1), 0 2px 0 #bda88a;
+}
+.number-card-option.selected {
+  border-color: #62a83b;
+  box-shadow: 0 0 0 4px #dff0cb, 0 4px 8px rgba(98,168,59,0.3);
+  transform: translateY(-3px);
+}
+
+/* Predecessor and Successor board */
+.vecinos-board {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 620px;
+  margin: 15px 0;
+}
+.vecinos-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+.vecinos-label {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #796e62;
+  text-transform: uppercase;
+}
+.vecinos-card-slot {
+  background: #fbf9f2;
+  border: 3px dashed #bda88a;
+  border-radius: 20px;
+  width: 100%;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 900;
+  color: #2e7d32;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.04);
+}
+.vecinos-card-slot.hover {
+  background: #ebf3e3;
+  border-color: #7cb342;
+}
+.vecinos-card-slot.filled {
+  background: #fffdf8;
+  border: 4px solid #7cb342;
+  box-shadow: 0 6px 12px rgba(60,80,45,0.1);
+  cursor: pointer;
+}
+.vecinos-center-card {
+  background: #fffdf8;
+  border: 4px solid #ea7e2c;
+  border-radius: 20px;
+  width: 100%;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #b35613;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+}
+
+/* Jumps & Sequences */
+.sequence-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  max-width: 780px;
+  margin: 15px 0;
+  background: #eef5e4;
+  padding: 16px;
+  border-radius: 24px;
+  border: 3px solid #ccd6be;
+  box-sizing: border-box;
+}
+.sequence-item {
+  font-size: 1.8rem;
+  font-weight: 850;
+  color: #4b3d30;
+}
+.sequence-arrow {
+  font-size: 1.5rem;
+  color: #7cb342;
+  font-weight: 800;
+}
+.sequence-slot {
+  background: #fffdf8;
+  border: 3px dashed #85c370;
+  border-radius: 16px;
+  min-width: 64px;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #2e7d32;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.sequence-slot.hover {
+  background: #ebf3e3;
+  border-color: #558b2f;
+}
+.sequence-slot.filled {
+  border: 3px solid #7cb342;
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+/* Sorting / Order */
+.sorting-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  width: 100%;
+  max-width: 640px;
+  margin: 15px 0;
+}
+.sorting-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.sorting-slot {
+  background: #fbf9f2;
+  border: 3px dashed #ccd6be;
+  border-radius: 20px;
+  width: 100%;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: #2e7d32;
+  cursor: pointer;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+}
+.sorting-slot.hover {
+  background: #ebf3e3;
+  border-color: #7cb342;
+}
+.sorting-slot.filled {
+  background: #fffdf8;
+  border: 3.5px solid #7cb342;
+  box-shadow: 0 5px 10px rgba(60,80,45,0.08);
+}
+.sorting-slot-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #796e62;
+  text-align: center;
+  line-height: 1.25;
+}
+
+/* Compare / Checkbox cards */
+.compare-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 600px;
+  margin: 15px 0;
+}
+.compare-card {
+  flex: 1;
+  background: #fffdf8;
+  border: 3px solid #ccd6be;
+  border-radius: 22px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  box-shadow: 0 6px 12px rgba(60,80,45,0.06);
+  transition: all 0.15s ease;
+}
+.compare-card:hover {
+  transform: translateY(-2px);
+  border-color: #b8cc9c;
+  box-shadow: 0 8px 16px rgba(60,80,45,0.1);
+}
+.compare-card.selected {
+  border-color: #62a83b;
+  background: #f7fcf2;
+  box-shadow: 0 0 0 4px #dff0cb, 0 6px 12px rgba(98,168,59,0.15);
+}
+.compare-checkbox {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 3px solid #ccd6be;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  transition: all 0.15s;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #fff;
+}
+.compare-card.selected .compare-checkbox {
+  border-color: #62a83b;
+  background: #62a83b;
+  color: #fff;
+}
+.compare-card.selected .compare-checkbox::after {
+  content: '✓';
+}
+.compare-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.compare-number {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #4b3d30;
+}
+.compare-desc {
+  font-size: 0.8rem;
+  color: #8c7b6a;
+  font-weight: 700;
+}
+
+/* Visual SVG Number line styles */
+.svg-number-line-container {
+  width: 100%;
+  max-width: 780px;
+  margin: 15px auto 5px;
+  padding: 10px;
+  background: #fffdf8;
+  border: 3px solid #ccd6be;
+  border-radius: 24px;
+  box-shadow: 0 8px 18px rgba(60,80,45,0.06);
+  position: relative;
+  box-sizing: border-box;
+}
+.svg-number-line {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.number-line-base-line {
+  stroke: #a06a42;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.number-line-tick {
+  stroke: #a06a42;
+  stroke-width: 4;
+}
+.number-line-text {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  fill: #5c5040;
+  text-anchor: middle;
+}
+.number-line-text.active {
+  fill: #2e7d32;
+  font-weight: 900;
+  font-size: 16px;
+}
+.interactive-tick-area {
+  fill: transparent;
+  cursor: pointer;
+}
+.interactive-tick-area:hover + .number-line-text {
+  fill: #85c370;
+  font-size: 16px;
+}
+
+.jump-arc {
+  fill: none;
+  stroke: #7cb342;
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: drawArc 0.6s ease-in-out forwards;
+}
+
+@keyframes drawArc {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.number-line-marker {
+  fill: #ea7e2c;
+  stroke: #fff;
+  stroke-width: 3;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+  animation: markerPulse 1.5s infinite alternate;
+}
+@keyframes markerPulse {
+  from { r: 7; }
+  to { r: 9.5; }
+}
+
+.static-helper-line-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 5px auto 12px;
+  background: #fcfbf7;
+  border: 2px solid #e6dec5;
+  border-radius: 14px;
+  padding: 4px 10px;
+  box-sizing: border-box;
+}
+.static-helper-line-container .svg-number-line {
+  height: 48px;
+}
+.static-helper-line-container .number-line-text {
+  font-size: 11px;
+}
+
+/* Responsive updates for Recta Numérica elements */
+@media (max-width: 820px) {
+  .vecinos-board {
+    gap: 12px;
+  }
+  .vecinos-card-slot, .vecinos-center-card {
+    min-height: 76px;
+    font-size: 1.6rem;
+  }
+  .sorting-slots-grid {
+    gap: 8px;
+  }
+  .sorting-slot {
+    min-height: 64px;
+    font-size: 1.25rem;
+  }
+  .compare-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .compare-card {
+    padding: 12px;
+  }
+}
+
 
